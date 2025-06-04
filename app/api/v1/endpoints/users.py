@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api import deps
-from app.core.security import get_password_hash
+from app.core.utils import check_user_exists, update_user_data, create_user_from_schema
 from app.models.user import User
 from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
 
@@ -30,12 +30,7 @@ def update_user_me(
     """
     Update own user.
     """
-    if user_in.password is not None:
-        current_user.hashed_password = get_password_hash(user_in.password)
-    if user_in.full_name is not None:
-        current_user.full_name = user_in.full_name
-    if user_in.email is not None:
-        current_user.email = user_in.email
+    update_user_data(current_user, user_in)
     db.add(current_user)
     db.commit()
     db.refresh(current_user)
@@ -86,25 +81,8 @@ def create_user(
     """
     Create new user.
     """
-    user = db.query(User).filter(
-        (User.email == user_in.email) | (User.username == user_in.username)
-    ).first()
-    if user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email or username already exists in the system.",
-        )
-    user = User(
-        email=user_in.email,
-        username=user_in.username,
-        hashed_password=get_password_hash(user_in.password),
-        full_name=user_in.full_name,
-        is_superuser=False,
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+    check_user_exists(db, user_in.email, user_in.username)
+    return create_user_from_schema(db, user_in)
 
 
 @router.put("/{user_id}", response_model=UserSchema)
@@ -124,16 +102,7 @@ def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    if user_in.password is not None:
-        user.hashed_password = get_password_hash(user_in.password)
-    if user_in.full_name is not None:
-        user.full_name = user_in.full_name
-    if user_in.email is not None:
-        user.email = user_in.email
-    if user_in.is_active is not None:
-        user.is_active = user_in.is_active
-    if user_in.is_superuser is not None:
-        user.is_superuser = user_in.is_superuser
+    update_user_data(user, user_in)
     db.add(user)
     db.commit()
     db.refresh(user)

@@ -8,9 +8,10 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.redis import add_to_blacklist
+from app.core.utils import get_user_by_email_or_username, create_user_from_schema
 from app.models.user import User, Session as UserSession
 from app.schemas.user import Token, UserCreate, User as UserSchema
-from app.core.security import get_password_hash, verify_password
+from app.core.security import verify_password
 
 router = APIRouter()
 
@@ -23,9 +24,7 @@ def login(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = db.query(User).filter(
-        (User.email == form_data.username) | (User.username == form_data.username)
-    ).first()
+    user = get_user_by_email_or_username(db, form_data.username, form_data.username)
 
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -74,27 +73,7 @@ def register(
     """
     Create new user.
     """
-    user = db.query(User).filter(
-        (User.email == user_in.email) | (User.username == user_in.username)
-    ).first()
-    if user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email or username already exists in the system.",
-        )
-
-    user = User(
-        email=user_in.email,
-        username=user_in.username,
-        hashed_password=get_password_hash(user_in.password),
-        full_name=user_in.full_name,
-        is_active=True,
-        is_superuser=False,
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+    return create_user_from_schema(db, user_in)
 
 
 @router.post("/refresh", response_model=Token)
