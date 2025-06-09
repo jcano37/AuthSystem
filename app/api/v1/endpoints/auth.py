@@ -74,7 +74,7 @@ def register(
     Create new user.
     """
     try:
-        return create_user_from_schema(db, user_in)
+        return create_user_from_schema(db, user_in, is_active=True, is_superuser=user_in.is_superuser)
     except HTTPException as e:
         raise e
     except Exception as e:

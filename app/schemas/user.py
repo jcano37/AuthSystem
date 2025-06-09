@@ -18,6 +18,7 @@ class UserCreate(UserBase):
     username: str
     password: Annotated[str, Field(min_length=8)]
     full_name: str
+    is_superuser: bool = False
 
 
 # Properties to receive via API on update

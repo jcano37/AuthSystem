@@ -87,7 +87,7 @@ def create_user(
     Create new user.
     """
     check_user_exists(db, user_in.email, user_in.username)
-    return create_user_from_schema(db, user_in)
+    return create_user_from_schema(db, user_in, is_active=True, is_superuser=user_in.is_superuser)
 
 
 @router.put("/{user_id}", response_model=UserSchema)
