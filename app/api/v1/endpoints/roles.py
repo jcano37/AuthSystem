@@ -16,7 +16,7 @@ def read_roles(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
         limit: int = 100,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Retrieve roles.
@@ -30,7 +30,7 @@ def create_role(
         *,
         db: Session = Depends(deps.get_db),
         role_in: RoleCreate,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new role.
@@ -54,7 +54,7 @@ def update_role(
         db: Session = Depends(deps.get_db),
         role_id: int,
         role_in: RoleUpdate,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Update a role.
@@ -78,7 +78,7 @@ def delete_role(
         *,
         db: Session = Depends(deps.get_db),
         role_id: int,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Delete a role.
@@ -100,7 +100,7 @@ def read_permissions(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
         limit: int = 100,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Retrieve permissions.
@@ -114,7 +114,7 @@ def create_permission(
         *,
         db: Session = Depends(deps.get_db),
         permission_in: PermissionCreate,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new permission.
@@ -138,7 +138,7 @@ def update_permission(
         db: Session = Depends(deps.get_db),
         permission_id: int,
         permission_in: PermissionUpdate,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Update a permission.
@@ -162,7 +162,7 @@ def delete_permission(
         *,
         db: Session = Depends(deps.get_db),
         permission_id: int,
-        current_user: User = Depends(deps.get_current_active_superuser),
+        _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Delete a permission.

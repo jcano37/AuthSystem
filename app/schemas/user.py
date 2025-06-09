@@ -1,5 +1,5 @@
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, constr
+from typing import Optional, Annotated
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
 
@@ -16,13 +16,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     email: EmailStr
     username: str
-    password: constr(min_length=8)
+    password: Annotated[str, Field(min_length=8)]
     full_name: str
 
 
 # Properties to receive via API on update
 class UserUpdate(UserBase):
-    password: Optional[constr(min_length=8)] = None
+    password: Optional[Annotated[str, Field(min_length=8)]] = None
 
 
 # Properties shared by models stored in DB
