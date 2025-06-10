@@ -47,6 +47,11 @@ def read_user_by_id(
     Get a specific user by id.
     """
     user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
     if user == current_user:
         return user
     if not current_user.is_superuser:
@@ -82,7 +87,7 @@ def create_user(
     Create new user.
     """
     check_user_exists(db, user_in.email, user_in.username)
-    return create_user_from_schema(db, user_in)
+    return create_user_from_schema(db, user_in, is_active=user_in.is_active, is_superuser=user_in.is_superuser)
 
 
 @router.put("/{user_id}", response_model=UserSchema)

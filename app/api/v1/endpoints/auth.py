@@ -73,7 +73,15 @@ def register(
     """
     Create new user.
     """
-    return create_user_from_schema(db, user_in)
+    try:
+        return create_user_from_schema(db, user_in, is_active=user_in.is_active, is_superuser=user_in.is_superuser)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 
 @router.post("/refresh", response_model=Token)

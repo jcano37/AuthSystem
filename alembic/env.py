@@ -5,6 +5,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -68,15 +70,39 @@ def run_migrations_online() -> None:
     """
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
+    
+    # Optimized pool settings
+    if not configuration.get("sqlalchemy.pool_size"):
+        configuration["sqlalchemy.pool_size"] = "5"
+    if not configuration.get("sqlalchemy.max_overflow"):
+        configuration["sqlalchemy.max_overflow"] = "10"
+    
+    # Establecer directamente los argumentos de conexión
+    connect_args = {
+        "connect_timeout": 15,  # Timeout de conexión en segundos
+    }
+        
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+        poolclass=pool.QueuePool,  # Using QueuePool for better performance
+        connect_args=connect_args  # Pasar argumentos de conexión explícitamente
     )
 
     with connectable.connect() as connection:
+        # Enable batch operations for better performance
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata,
+            # Enable batch mode for better performance with larger migrations
+            render_as_batch=True,
+            # Optimize index creation
+            compare_type=True,
+            compare_server_default=True,
+            # Set a larger transaction batch size for better performance
+            transaction_per_migration=True,
+            # Set a reasonable batch size for large operations
+            batch_size=1000
         )
 
         with context.begin_transaction():
