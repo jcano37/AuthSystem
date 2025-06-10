@@ -85,7 +85,7 @@ def update_role(
             detail="Role not found",
         )
     
-    # Si se está cambiando el nombre, verificar que no exista otro rol con ese nombre
+    # If the name is being changed, verify that no other role with that name exists
     if role_in.name and role_in.name != role.name:
         existing_role = db.query(Role).filter(Role.name == role_in.name).first()
         if existing_role:

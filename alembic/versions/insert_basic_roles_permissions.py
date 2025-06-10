@@ -64,19 +64,19 @@ def upgrade() -> None:
     resource_types_data = [
         {
             'name': 'users',
-            'description': 'Recursos relacionados con usuarios',
+            'description': 'Resources related to users',
             'created_at': current_time,
             'updated_at': current_time
         },
         {
             'name': 'roles',
-            'description': 'Recursos relacionados con roles',
+            'description': 'Resources related to roles',
             'created_at': current_time,
             'updated_at': current_time
         },
         {
             'name': 'profile',
-            'description': 'Recursos relacionados con perfiles',
+            'description': 'Resources related to profiles',
             'created_at': current_time,
             'updated_at': current_time
         }
@@ -94,21 +94,21 @@ def upgrade() -> None:
     roles_data = [
         {
             'name': 'admin',
-            'description': 'Administrador con acceso completo',
+            'description': 'Administrator with full access',
             'created_at': current_time,
             'updated_at': current_time,
             'is_default': False
         },
         {
             'name': 'user',
-            'description': 'Usuario estándar con acceso limitado',
+            'description': 'Standard user with limited access',
             'created_at': current_time,
             'updated_at': current_time,
             'is_default': True
         },
         {
             'name': 'guest',
-            'description': 'Usuario invitado con acceso solo de lectura',
+            'description': 'Guest user with read-only access',
             'created_at': current_time,
             'updated_at': current_time,
             'is_default': False
@@ -128,7 +128,7 @@ def upgrade() -> None:
         # User resource permissions
         {
             'name': 'users:read',
-            'description': 'Ver usuarios',
+            'description': 'View users',
             'resource_type_id': resource_types['users'],
             'action': 'read',
             'created_at': current_time,
@@ -136,7 +136,7 @@ def upgrade() -> None:
         },
         {
             'name': 'users:create',
-            'description': 'Crear usuarios',
+            'description': 'Create users',
             'resource_type_id': resource_types['users'],
             'action': 'create',
             'created_at': current_time,
@@ -144,7 +144,7 @@ def upgrade() -> None:
         },
         {
             'name': 'users:update',
-            'description': 'Actualizar usuarios',
+            'description': 'Update users',
             'resource_type_id': resource_types['users'],
             'action': 'update',
             'created_at': current_time,
@@ -152,7 +152,7 @@ def upgrade() -> None:
         },
         {
             'name': 'users:delete',
-            'description': 'Eliminar usuarios',
+            'description': 'Delete users',
             'resource_type_id': resource_types['users'],
             'action': 'delete',
             'created_at': current_time,
@@ -161,7 +161,7 @@ def upgrade() -> None:
         # Role resource permissions
         {
             'name': 'roles:read',
-            'description': 'Ver roles',
+            'description': 'View roles',
             'resource_type_id': resource_types['roles'],
             'action': 'read',
             'created_at': current_time,
@@ -169,7 +169,7 @@ def upgrade() -> None:
         },
         {
             'name': 'roles:create',
-            'description': 'Crear roles',
+            'description': 'Create roles',
             'resource_type_id': resource_types['roles'],
             'action': 'create',
             'created_at': current_time,
@@ -177,7 +177,7 @@ def upgrade() -> None:
         },
         {
             'name': 'roles:update',
-            'description': 'Actualizar roles',
+            'description': 'Update roles',
             'resource_type_id': resource_types['roles'],
             'action': 'update',
             'created_at': current_time,
@@ -185,7 +185,7 @@ def upgrade() -> None:
         },
         {
             'name': 'roles:delete',
-            'description': 'Eliminar roles',
+            'description': 'Delete roles',
             'resource_type_id': resource_types['roles'],
             'action': 'delete',
             'created_at': current_time,
@@ -194,7 +194,7 @@ def upgrade() -> None:
         # Profile permission
         {
             'name': 'profile:update',
-            'description': 'Actualizar perfil propio',
+            'description': 'Update own profile',
             'resource_type_id': resource_types['profile'],
             'action': 'update',
             'created_at': current_time,
@@ -245,11 +245,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Optimización: Usar transacción explícita para las eliminaciones
+    # Optimization: Use explicit transaction for deletions
     connection = op.get_bind()
     
     with connection.begin():
-        # Eliminaciones en orden inverso para respetar restricciones de clave foránea
+        # Deletions in reverse order to respect foreign key constraints
         connection.execute(text("TRUNCATE role_permission CASCADE"))
         connection.execute(text("TRUNCATE permissions CASCADE"))
         connection.execute(text("TRUNCATE roles CASCADE"))

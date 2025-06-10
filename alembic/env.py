@@ -77,16 +77,16 @@ def run_migrations_online() -> None:
     if not configuration.get("sqlalchemy.max_overflow"):
         configuration["sqlalchemy.max_overflow"] = "10"
     
-    # Establecer directamente los argumentos de conexión
+    # Set connection arguments directly
     connect_args = {
-        "connect_timeout": 15,  # Timeout de conexión en segundos
+        "connect_timeout": 15,  # Connection timeout in seconds
     }
         
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.QueuePool,  # Using QueuePool for better performance
-        connect_args=connect_args  # Pasar argumentos de conexión explícitamente
+        connect_args=connect_args  # Pass connection arguments explicitly
     )
 
     with connectable.connect() as connection:

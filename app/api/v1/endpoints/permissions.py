@@ -88,7 +88,7 @@ def update_permission(
             detail="Permission not found",
         )
     
-    # Si se está cambiando el nombre, verificar que no exista otro permiso con ese nombre
+    # If the name is being changed, verify that no other permission with that name exists
     if permission_in.name and permission_in.name != permission.name:
         existing_permission = db.query(Permission).filter(Permission.name == permission_in.name).first()
         if existing_permission:
@@ -101,7 +101,7 @@ def update_permission(
     for field in update_data:
         setattr(permission, field, update_data[field])
     
-    # Validar que el tipo de recurso exista
+    # Validate that the resource type exists
     if 'resource_type_id' in update_data:
         from app.models.resource import ResourceType
         resource_type = db.query(ResourceType).filter(ResourceType.id == update_data['resource_type_id']).first()
