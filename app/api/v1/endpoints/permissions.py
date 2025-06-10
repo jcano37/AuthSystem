@@ -39,7 +39,12 @@ def create_permission(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The permission with this name already exists in the system.",
         )
-    permission = Permission(**permission_in.dict())
+    permission = Permission(
+        name=permission_in.name,
+        description=permission_in.description,
+        resource_type_id=permission_in.resource_type_id,
+        action=permission_in.action
+    )
     db.add(permission)
     db.commit()
     db.refresh(permission)
@@ -92,8 +97,19 @@ def update_permission(
                 detail="The permission with this name already exists in the system.",
             )
     
-    for field, value in permission_in.dict(exclude_unset=True).items():
-        setattr(permission, field, value)
+    update_data = permission_in.dict(exclude_unset=True)
+    for field in update_data:
+        setattr(permission, field, update_data[field])
+    
+    # Validar que el tipo de recurso exista
+    if 'resource_type_id' in update_data:
+        from app.models.resource import ResourceType
+        resource_type = db.query(ResourceType).filter(ResourceType.id == update_data['resource_type_id']).first()
+        if not resource_type:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Resource type with id {update_data['resource_type_id']} not found"
+            )
     db.add(permission)
     db.commit()
     db.refresh(permission)

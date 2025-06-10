@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.v1.endpoints import auth, users, roles, permissions
+from app.api.v1.endpoints import auth, users, roles, permissions, resources as resources_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +23,7 @@ app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["aut
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(roles.router, prefix=f"{settings.API_V1_STR}/roles", tags=["roles"])
 app.include_router(permissions.router, prefix=f"{settings.API_V1_STR}/permissions", tags=["permissions"])
+app.include_router(resources_router.router, prefix=f"{settings.API_V1_STR}/resources", tags=["resources"])
 
 
 @app.get("/")

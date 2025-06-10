@@ -1,5 +1,5 @@
 from typing import Optional, Annotated, List
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from datetime import datetime
 
 
@@ -90,7 +90,7 @@ class Role(RoleBase):
 class PermissionBase(BaseModel):
     name: str
     description: Optional[str] = None
-    resource: str
+    resource_type_id: int
     action: str
 
 

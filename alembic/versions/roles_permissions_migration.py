@@ -46,14 +46,17 @@ def upgrade() -> None:
     # Drop foreign key constraint from permissions to roles
     op.drop_constraint('permissions_role_id_fkey', 'permissions', type_='foreignkey')
     
-    # Add resource and action columns to permissions table
-    op.add_column('permissions', sa.Column('resource', sa.String(), nullable=True))
+    # Add resource_type_id and action columns to permissions table
+    op.add_column('permissions', sa.Column('resource_type_id', sa.Integer(), nullable=True))
     op.add_column('permissions', sa.Column('action', sa.String(), nullable=True))
     op.add_column('permissions', sa.Column('updated_at', sa.DateTime(), nullable=True))
     
-    # Make resource and action columns not nullable
-    op.execute("UPDATE permissions SET resource = 'default', action = 'default' WHERE resource IS NULL")
-    op.alter_column('permissions', 'resource', nullable=False)
+    # Add foreign key constraint to resource_types
+    op.create_foreign_key('permissions_resource_type_id_fkey', 'permissions', 'resource_types', ['resource_type_id'], ['id'])
+    
+    # Make resource_type_id and action columns not nullable
+    op.execute("UPDATE permissions SET resource_type_id = 1, action = 'default' WHERE resource_type_id IS NULL")
+    op.alter_column('permissions', 'resource_type_id', nullable=False)
     op.alter_column('permissions', 'action', nullable=False)
     
     # Drop role_id column from permissions
@@ -65,8 +68,9 @@ def downgrade() -> None:
     op.add_column('permissions', sa.Column('role_id', sa.Integer(), nullable=True))
     op.create_foreign_key('permissions_role_id_fkey', 'permissions', 'roles', ['role_id'], ['id'])
     
-    # Drop resource and action columns from permissions
-    op.drop_column('permissions', 'resource')
+    # Drop resource_type_id and action columns from permissions
+    op.drop_constraint('permissions_resource_type_id_fkey', 'permissions', type_='foreignkey')
+    op.drop_column('permissions', 'resource_type_id')
     op.drop_column('permissions', 'action')
     op.drop_column('permissions', 'updated_at')
     

@@ -36,7 +36,7 @@ permissions_table = table('permissions',
     column('id', sa.Integer),
     column('name', sa.String),
     column('description', sa.String),
-    column('resource', sa.String),
+    column('resource_type_id', sa.Integer),
     column('action', sa.String),
     column('created_at', sa.DateTime),
     column('updated_at', sa.DateTime)
@@ -47,9 +47,48 @@ role_permission_table = table('role_permission',
     column('permission_id', sa.Integer)
 )
 
+resource_types_table = table('resource_types',
+    column('id', sa.Integer),
+    column('name', sa.String),
+    column('description', sa.String),
+    column('created_at', sa.DateTime),
+    column('updated_at', sa.DateTime)
+)
+
+
 def upgrade() -> None:
     connection = op.get_bind()
     current_time = datetime.utcnow()
+    
+    # Insert basic resource types
+    resource_types_data = [
+        {
+            'name': 'users',
+            'description': 'Recursos relacionados con usuarios',
+            'created_at': current_time,
+            'updated_at': current_time
+        },
+        {
+            'name': 'roles',
+            'description': 'Recursos relacionados con roles',
+            'created_at': current_time,
+            'updated_at': current_time
+        },
+        {
+            'name': 'profile',
+            'description': 'Recursos relacionados con perfiles',
+            'created_at': current_time,
+            'updated_at': current_time
+        }
+    ]
+    
+    # Insert resource types
+    batch_insert(connection, resource_types_table, resource_types_data)
+    
+    # Get resource types
+    resource_types_query = select(resource_types_table.c.id, resource_types_table.c.name)
+    resource_types_result = connection.execute(resource_types_query).fetchall()
+    resource_types = {name: id for id, name in resource_types_result}
     
     # Insert basic roles with returning IDs
     roles_data = [
@@ -76,21 +115,21 @@ def upgrade() -> None:
         }
     ]
     
-    # Usar utilidad de batch_insert para insertar roles de manera optimizada
+    # Insert roles
     batch_insert(connection, roles_table, roles_data)
     
-    # Usar una sola consulta para obtener todos los roles
+    # Get roles
     roles_query = select(roles_table.c.id, roles_table.c.name).order_by(roles_table.c.id)
     roles_result = connection.execute(roles_query).fetchall()
     roles = {role_name: role_id for role_id, role_name in roles_result}
     
-    # Definir permisos con tiempo uniforme para reducir variaciones
+    # Define permissions with resource_type_id
     permissions_data = [
         # User resource permissions
         {
             'name': 'users:read',
             'description': 'Ver usuarios',
-            'resource': 'users',
+            'resource_type_id': resource_types['users'],
             'action': 'read',
             'created_at': current_time,
             'updated_at': current_time
@@ -98,7 +137,7 @@ def upgrade() -> None:
         {
             'name': 'users:create',
             'description': 'Crear usuarios',
-            'resource': 'users',
+            'resource_type_id': resource_types['users'],
             'action': 'create',
             'created_at': current_time,
             'updated_at': current_time
@@ -106,7 +145,7 @@ def upgrade() -> None:
         {
             'name': 'users:update',
             'description': 'Actualizar usuarios',
-            'resource': 'users',
+            'resource_type_id': resource_types['users'],
             'action': 'update',
             'created_at': current_time,
             'updated_at': current_time
@@ -114,7 +153,7 @@ def upgrade() -> None:
         {
             'name': 'users:delete',
             'description': 'Eliminar usuarios',
-            'resource': 'users',
+            'resource_type_id': resource_types['users'],
             'action': 'delete',
             'created_at': current_time,
             'updated_at': current_time
@@ -123,7 +162,7 @@ def upgrade() -> None:
         {
             'name': 'roles:read',
             'description': 'Ver roles',
-            'resource': 'roles',
+            'resource_type_id': resource_types['roles'],
             'action': 'read',
             'created_at': current_time,
             'updated_at': current_time
@@ -131,7 +170,7 @@ def upgrade() -> None:
         {
             'name': 'roles:create',
             'description': 'Crear roles',
-            'resource': 'roles',
+            'resource_type_id': resource_types['roles'],
             'action': 'create',
             'created_at': current_time,
             'updated_at': current_time
@@ -139,7 +178,7 @@ def upgrade() -> None:
         {
             'name': 'roles:update',
             'description': 'Actualizar roles',
-            'resource': 'roles',
+            'resource_type_id': resource_types['roles'],
             'action': 'update',
             'created_at': current_time,
             'updated_at': current_time
@@ -147,7 +186,7 @@ def upgrade() -> None:
         {
             'name': 'roles:delete',
             'description': 'Eliminar roles',
-            'resource': 'roles',
+            'resource_type_id': resource_types['roles'],
             'action': 'delete',
             'created_at': current_time,
             'updated_at': current_time
@@ -156,22 +195,22 @@ def upgrade() -> None:
         {
             'name': 'profile:update',
             'description': 'Actualizar perfil propio',
-            'resource': 'profile',
+            'resource_type_id': resource_types['profile'],
             'action': 'update',
             'created_at': current_time,
             'updated_at': current_time
         }
     ]
     
-    # Usar utilidad de batch_insert para insertar permisos de manera optimizada
+    # Insert permissions
     batch_insert(connection, permissions_table, permissions_data)
     
-    # Crear índice optimizado para name en permisos (de manera concurrente para evitar bloqueos)
+    # Create optimized index for name in permissions
     with_statement_timeout(connection, 30000, lambda: optimize_index_creation(
         connection, 'permissions', 'name', 'ix_permissions_name_optimized', unique=True
     ))
     
-    # Usar una sola consulta para obtener todos los permisos
+    # Get permissions
     permissions_query = select(permissions_table.c.id, permissions_table.c.name).order_by(permissions_table.c.id)
     permissions_result = connection.execute(permissions_query).fetchall()
     permissions = {perm_name: perm_id for perm_id, perm_name in permissions_result}
@@ -187,7 +226,7 @@ def upgrade() -> None:
         'guest': ['users:read']
     }
     
-    # Preparar todos los datos para role-permission
+    # Prepare all data for role-permission
     role_permissions = []
     for role_name, perm_names in role_permissions_mapping.items():
         role_id = roles.get(role_name)
@@ -200,7 +239,7 @@ def upgrade() -> None:
                         'permission_id': perm_id
                     })
     
-    # Usar utilidad de batch_insert para insertar relaciones de manera optimizada
+    # Use batch_insert utility to insert relationships in an optimized way
     if role_permissions:
         batch_insert(connection, role_permission_table, role_permissions)
 
@@ -213,4 +252,5 @@ def downgrade() -> None:
         # Eliminaciones en orden inverso para respetar restricciones de clave foránea
         connection.execute(text("TRUNCATE role_permission CASCADE"))
         connection.execute(text("TRUNCATE permissions CASCADE"))
-        connection.execute(text("TRUNCATE roles CASCADE")) 
+        connection.execute(text("TRUNCATE roles CASCADE"))
+        connection.execute(text("TRUNCATE resource_types CASCADE"))
