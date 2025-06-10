@@ -1,8 +1,11 @@
+import secrets
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from app.core.config import settings
 from app.core.security import get_password_hash
-from app.models.user import User
+from app.models.user import User, PasswordResetToken
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -78,3 +81,49 @@ def delete_user(db: Session, *, user_id: int) -> Optional[User]:
         db.delete(user)
         db.commit()
     return user
+
+
+def create_password_reset_token(db: Session, *, user: User) -> PasswordResetToken:
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS)
+    db_token = PasswordResetToken(
+        user_id=user.id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.add(db_token)
+    db.commit()
+    db.refresh(db_token)
+    return db_token
+
+
+def get_password_reset_token_by_token(db: Session, *, token: str) -> Optional[PasswordResetToken]:
+    return db.query(PasswordResetToken).filter(PasswordResetToken.token == token).first()
+
+
+def reset_password(db: Session, *, token_obj: PasswordResetToken, new_password: str) -> None:
+    if token_obj.is_used:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token has already been used"
+        )
+    if token_obj.expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token has expired"
+        )
+
+    user = get_user_by_id(db, user_id=token_obj.user_id)
+    if not user:
+        # This should not happen if the token is valid, but as a safeguard
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    hashed_password = get_password_hash(new_password)
+    user.hashed_password = hashed_password
+    token_obj.is_used = True
+    db.add(user)
+    db.add(token_obj)
+    db.commit()

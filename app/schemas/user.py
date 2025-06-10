@@ -66,6 +66,16 @@ class TokenRefresh(BaseModel):
     refresh_token: str
 
 
+# Password reset schemas
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: Annotated[str, Field(min_length=8)]
+
+
 # Role schemas
 class RoleBase(BaseModel):
     name: str

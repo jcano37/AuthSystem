@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.redis import add_to_blacklist
 from app import crud
 from app.models.user import User, Session as UserSession
-from app.schemas.user import Token, UserCreate, User as UserSchema, TokenRefresh
+from app.schemas.user import Token, UserCreate, User as UserSchema, TokenRefresh, PasswordResetRequest, PasswordReset
 from app.core.security import verify_password
 
 router = APIRouter()
@@ -173,3 +173,45 @@ def logout(
         db.commit()
 
     return {"message": "Successfully logged out"}
+
+
+@router.post("/password-reset-request", status_code=status.HTTP_202_ACCEPTED)
+def request_password_reset(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    password_reset_request: PasswordResetRequest
+) -> Any:
+    """
+    Request password reset. This will trigger an email to be sent to the user.
+    """
+    user = crud.user.get_user_by_email(db, email=password_reset_request.email)
+    if not user:
+        # For security, we don't reveal if the user exists or not.
+        # We'll just return a 202 Accepted status in any case.
+        return {"message": "If a matching account exists, an email will be sent with instructions."}
+
+    password_reset_token = crud.user.create_password_reset_token(db, user=user)
+    # TODO: Send an email to the user with the token.
+    # For development, we'll return the token in the response.
+    print(f"Password reset token for {user.email}: {password_reset_token.token}")
+    return {"message": "If a matching account exists, an email will be sent with instructions."}
+
+
+@router.post("/password-reset")
+def reset_password(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    password_reset: PasswordReset
+) -> Any:
+    """
+    Reset password using the token from the email.
+    """
+    token_obj = crud.user.get_password_reset_token_by_token(db, token=password_reset.token)
+    if not token_obj or token_obj.is_used or token_obj.expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+
+    crud.user.reset_password(db, token_obj=token_obj, new_password=password_reset.new_password)
+    return {"message": "Password updated successfully"}
