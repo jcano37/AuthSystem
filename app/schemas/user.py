@@ -1,4 +1,4 @@
-from typing import Optional, Annotated
+from typing import Optional, Annotated, List
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
@@ -79,6 +79,8 @@ class RoleUpdate(RoleBase):
 class Role(RoleBase):
     id: int
     created_at: datetime
+    is_default: Optional[bool] = False
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -88,10 +90,12 @@ class Role(RoleBase):
 class PermissionBase(BaseModel):
     name: str
     description: Optional[str] = None
+    resource: str
+    action: str
 
 
 class PermissionCreate(PermissionBase):
-    role_id: int
+    pass
 
 
 class PermissionUpdate(PermissionBase):
@@ -100,8 +104,13 @@ class PermissionUpdate(PermissionBase):
 
 class Permission(PermissionBase):
     id: int
-    role_id: int
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+# Role with permissions schema
+class RoleWithPermissions(Role):
+    permissions: List[Permission] = []
