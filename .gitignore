@@ -47,7 +47,7 @@ log/
 .docker/
 
 # Alembic
-alembic/versions/*.py
+# alembic/versions/*.py
 !alembic/versions/.gitkeep
 
 # Coverage reports
