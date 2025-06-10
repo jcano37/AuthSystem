@@ -1,6 +1,6 @@
-from typing import Optional, Annotated, List
-from pydantic import BaseModel, EmailStr, Field, model_validator
 from datetime import datetime
+from typing import Optional, Annotated, List
+from pydantic import BaseModel, EmailStr, Field
 
 
 # Shared properties
@@ -60,6 +60,10 @@ class TokenPayload(BaseModel):
     sub: Optional[int] = None
     exp: Optional[int] = None
     type: Optional[str] = None
+
+
+class TokenRefresh(BaseModel):
+    refresh_token: str
 
 
 # Role schemas

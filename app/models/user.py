@@ -1,8 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Boolean, Column, String, DateTime, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from app.models.resource import ResourceType
-
 from app.db.base_class import Base
 
 # Association table for user roles

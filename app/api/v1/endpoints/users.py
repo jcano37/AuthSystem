@@ -1,9 +1,8 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
 from app.api import deps
-from app.core.utils import check_user_exists, update_user_data, create_user_from_schema
+from app import crud
 from app.models.user import User
 from app.schemas.user import User as UserSchema, UserCreate, UserUpdate
 
@@ -30,35 +29,17 @@ def update_user_me(
     """
     Update own user.
     """
-    update_user_data(current_user, user_in)
-    db.add(current_user)
-    db.commit()
-    db.refresh(current_user)
-    return current_user
+    user = crud.user.update_user(db, db_obj=current_user, obj_in=user_in)
+    return user
 
 
 @router.get("/{user_id}", response_model=UserSchema)
 def read_user_by_id(
-        user_id: int,
-        current_user: User = Depends(deps.get_current_active_user),
-        db: Session = Depends(deps.get_db),
+        user: User = Depends(deps.get_user_by_id_from_path),
 ) -> Any:
     """
     Get a specific user by id.
     """
-    user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    if user == current_user:
-        return user
-    if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="The user doesn't have enough privileges"
-        )
     return user
 
 
@@ -72,7 +53,7 @@ def read_users(
     """
     Retrieve users.
     """
-    users = db.query(User).offset(skip).limit(limit).all()
+    users = crud.user.get_users(db, skip=skip, limit=limit)
     return users
 
 
@@ -86,31 +67,20 @@ def create_user(
     """
     Create new user.
     """
-    check_user_exists(db, user_in.email, user_in.username)
-    return create_user_from_schema(db, user_in, is_active=user_in.is_active, is_superuser=user_in.is_superuser)
+    return crud.user.create_user(db, user_in=user_in)
 
 
 @router.put("/{user_id}", response_model=UserSchema)
 def update_user(
         *,
         db: Session = Depends(deps.get_db),
-        user_id: int,
         user_in: UserUpdate,
-        _: User = Depends(deps.get_current_active_superuser),
+        user: User = Depends(deps.get_user_by_id_from_path),
 ) -> Any:
     """
     Update a user.
     """
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    update_user_data(user, user_in)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    user = crud.user.update_user(db, db_obj=user, obj_in=user_in)
     return user
 
 
@@ -118,18 +88,10 @@ def update_user(
 def delete_user(
         *,
         db: Session = Depends(deps.get_db),
-        user_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        user: User = Depends(deps.get_user_by_id_from_path),
 ) -> Any:
     """
     Delete a user.
     """
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    db.delete(user)
-    db.commit()
+    crud.user.delete_user(db, user_id=user.id)
     return user

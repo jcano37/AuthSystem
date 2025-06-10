@@ -1,11 +1,10 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app import crud
 from app.api import deps
-from app.models.user import Role, Permission, User, role_permission
+from app.models.user import Role, Permission, User
 from app.schemas.user import Role as RoleSchema, RoleCreate, RoleUpdate, RoleWithPermissions
-from app.schemas.user import Permission as PermissionSchema
 
 router = APIRouter()
 
@@ -21,26 +20,18 @@ def read_roles(
     """
     Retrieve roles.
     """
-    roles = db.query(Role).offset(skip).limit(limit).all()
+    roles = crud.role.get_roles(db, skip=skip, limit=limit)
     return roles
 
 
 @router.get("/{role_id}", response_model=RoleWithPermissions)
 def read_role(
         *,
-        db: Session = Depends(deps.get_db),
-        role_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Get role by ID with permissions.
     """
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found",
-        )
     return role
 
 
@@ -49,77 +40,37 @@ def create_role(
         *,
         db: Session = Depends(deps.get_db),
         role_in: RoleCreate,
-        _: User = Depends(deps.get_current_active_superuser),
+        _=Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new role.
     """
-    role = db.query(Role).filter(Role.name == role_in.name).first()
-    if role:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The role with this name already exists in the system.",
-        )
-    role = Role(**role_in.dict())
-    db.add(role)
-    db.commit()
-    db.refresh(role)
-    return role
+    return crud.role.create_role(db, role_in=role_in)
 
 
 @router.put("/{role_id}", response_model=RoleSchema)
 def update_role(
         *,
         db: Session = Depends(deps.get_db),
-        role_id: int,
         role_in: RoleUpdate,
-        _: User = Depends(deps.get_current_active_superuser),
+        role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Update a role.
     """
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found",
-        )
-    
-    # If the name is being changed, verify that no other role with that name exists
-    if role_in.name and role_in.name != role.name:
-        existing_role = db.query(Role).filter(Role.name == role_in.name).first()
-        if existing_role:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The role with this name already exists in the system.",
-            )
-    
-    for field, value in role_in.dict(exclude_unset=True).items():
-        setattr(role, field, value)
-    db.add(role)
-    db.commit()
-    db.refresh(role)
-    return role
+    return crud.role.update_role(db, db_obj=role, obj_in=role_in)
 
 
 @router.delete("/{role_id}", response_model=RoleSchema)
 def delete_role(
         *,
         db: Session = Depends(deps.get_db),
-        role_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Delete a role.
     """
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found",
-        )
-    db.delete(role)
-    db.commit()
+    crud.role.delete_role(db, role_id=role.id)
     return role
 
 
@@ -127,73 +78,23 @@ def delete_role(
 def assign_permission_to_role(
         *,
         db: Session = Depends(deps.get_db),
-        role_id: int,
-        permission_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        role: Role = Depends(deps.get_role_by_id_from_path),
+        permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Assign a permission to a role.
     """
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found",
-        )
-    
-    permission = db.query(Permission).filter(Permission.id == permission_id).first()
-    if not permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found",
-        )
-    
-    # Check if the permission is already assigned to the role
-    if permission in role.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Permission is already assigned to this role",
-        )
-    
-    role.permissions.append(permission)
-    db.commit()
-    db.refresh(role)
-    return role
+    return crud.role.assign_permission_to_role(db, role=role, permission=permission)
 
 
 @router.delete("/{role_id}/permissions/{permission_id}", response_model=RoleWithPermissions)
 def remove_permission_from_role(
         *,
         db: Session = Depends(deps.get_db),
-        role_id: int,
-        permission_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        role: Role = Depends(deps.get_role_by_id_from_path),
+        permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Remove a permission from a role.
     """
-    role = db.query(Role).filter(Role.id == role_id).first()
-    if not role:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Role not found",
-        )
-    
-    permission = db.query(Permission).filter(Permission.id == permission_id).first()
-    if not permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found",
-        )
-    
-    # Check if the permission is assigned to the role
-    if permission not in role.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Permission is not assigned to this role",
-        )
-    
-    role.permissions.remove(permission)
-    db.commit()
-    db.refresh(role)
-    return role
+    return crud.role.remove_permission_from_role(db, role=role, permission=permission)

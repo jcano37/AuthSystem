@@ -1,7 +1,7 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app import crud
 from app.api import deps
 from app.models.resource import ResourceType
 from app.schemas.resource import ResourceType as ResourceTypeSchema, ResourceTypeCreate, ResourceTypeUpdate
@@ -19,7 +19,7 @@ def read_resource_types(
     """
     Retrieve resource types.
     """
-    resource_types = db.query(ResourceType).offset(skip).limit(limit).all()
+    resource_types = crud.resource.get_resource_types(db, skip=skip, limit=limit)
     return resource_types
 
 
@@ -33,89 +33,29 @@ def create_resource_type(
     """
     Create new resource type.
     """
-    # Check if resource type with the same name already exists
-    existing_resource_type = db.query(ResourceType).filter(ResourceType.name == resource_type_in.name).first()
-    if existing_resource_type:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Resource type with name '{resource_type_in.name}' already exists"
-        )
-
-    resource_type = ResourceType(
-        name=resource_type_in.name,
-        description=resource_type_in.description,
-    )
-    db.add(resource_type)
-    db.commit()
-    db.refresh(resource_type)
-    return resource_type
+    return crud.resource.create_resource_type(db, resource_type_in=resource_type_in)
 
 
 @router.put("/{resource_type_id}", response_model=ResourceTypeSchema)
 def update_resource_type(
         *,
         db: Session = Depends(deps.get_db),
-        resource_type_id: int,
         resource_type_in: ResourceTypeUpdate,
-        _: Any = Depends(deps.get_current_active_superuser),
+        resource_type: ResourceType = Depends(deps.get_resource_type_by_id_from_path),
 ) -> Any:
     """
     Update a resource type.
     """
-    resource_type = db.query(ResourceType).filter(ResourceType.id == resource_type_id).first()
-    if not resource_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Resource type not found",
-        )
-    
-    # Check if new name exists and is different from current name
-    if resource_type_in.name is not None and resource_type_in.name != resource_type.name:
-        existing_resource_type = db.query(ResourceType).filter(
-            ResourceType.name == resource_type_in.name,
-            ResourceType.id != resource_type_id
-        ).first()
-        if existing_resource_type:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Resource type with name '{resource_type_in.name}' already exists"
-            )
-    
-    if resource_type_in.name is not None:
-        resource_type.name = resource_type_in.name
-    if resource_type_in.description is not None:
-        resource_type.description = resource_type_in.description
-    
-    db.add(resource_type)
-    db.commit()
-    db.refresh(resource_type)
-    return resource_type
+    return crud.resource.update_resource_type(db, db_obj=resource_type, obj_in=resource_type_in)
 
 
 @router.delete("/{resource_type_id}", response_model=ResourceTypeSchema)
 def delete_resource_type(
         *,
         db: Session = Depends(deps.get_db),
-        resource_type_id: int,
-        _: Any = Depends(deps.get_current_active_superuser),
+        resource_type: ResourceType = Depends(deps.get_resource_type_by_id_from_path),
 ) -> Any:
     """
     Delete a resource type.
     """
-    resource_type = db.query(ResourceType).filter(ResourceType.id == resource_type_id).first()
-    if not resource_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Resource type not found",
-        )
-    
-    # Check if there are any permissions associated with this resource type
-    if resource_type.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete resource type that has associated permissions. Please delete or reassign the permissions first."
-        )
-    
-    db.delete(resource_type)
-    db.commit()
-    return resource_type
+    return crud.resource.delete_resource_type(db, resource_type_id=resource_type.id)
