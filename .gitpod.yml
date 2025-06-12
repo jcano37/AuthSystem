@@ -1,0 +1,48 @@
+# Este archivo le dice a Gitpod cómo configurar el entorno de desarrollo.
+# Utilizará tu archivo docker-compose.yml para iniciar todos los servicios.
+
+tasks:
+  - name: Run Application
+    # El comando 'init' se ejecuta una sola vez al crear el workspace.
+    # Espera a que la base de datos esté lista y aplica las migraciones.
+    init: |
+      echo "Esperando a que los servicios se inicien..."
+      # Gitpod se encarga de esperar a los healthchecks de docker-compose.
+      # Aplicamos las migraciones de la base de datos.
+      alembic upgrade head
+    # El comando 'command' se ejecuta cada vez que inicias el workspace.
+    # docker-compose up es manejado por Gitpod, por lo que aquí podemos
+    # simplemente mostrar un mensaje o dejarlo vacío.
+    command: |
+      echo "Workspace listo. La aplicación se está ejecutando a través de docker-compose."
+      echo "Puedes acceder a la API en el puerto 8000."
+
+# Exponer los puertos necesarios para acceder a los servicios.
+ports:
+  - port: 8000
+    onOpen: open-preview # Abre una vista previa del navegador para la API.
+    name: FastAPI App
+    description: Puerto principal de la aplicación
+  - port: 5432
+    onOpen: ignore # El puerto de la DB no necesita ser público.
+    name: PostgreSQL
+    description: Puerto de la base de datos
+  - port: 6379
+    onOpen: ignore # El puerto de Redis no necesita ser público.
+    name: Redis
+    description: Puerto del servicio de cache Redis
+
+# Configuración para la integración con docker-compose.
+# Gitpod usará el archivo 'docker-compose.yml' en la raíz del proyecto.
+gitpod.docker.compose:
+  file: ./docker-compose.yml
+  service: app # El terminal de Gitpod se abrirá en el contenedor 'app'.
+
+# Recomendar extensiones de VS Code para una mejor experiencia de desarrollo.
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-azuretools.vscode-docker
+    - redhat.vscode-yaml
+    - cweijan.vscode-postgresql-client2
