@@ -19,7 +19,7 @@ class UserCreate(UserBase):
     password: Annotated[str, Field(min_length=8)]
     full_name: str
     is_superuser: bool = False
-    is_active: bool = False
+    is_active: bool = True
 
 
 # Properties to receive via API on update
