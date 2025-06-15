@@ -20,6 +20,10 @@ def read_permissions(
     Retrieve permissions.
     """
     permissions = crud.permission.get_permissions(db, skip=skip, limit=limit)
+    # Add resource name to each permission
+    for permission in permissions:
+        if permission.resource_type:
+            permission.resource = permission.resource_type.name
     return permissions
 
 
@@ -33,7 +37,10 @@ def create_permission(
     """
     Create new permission.
     """
-    return crud.permission.create_permission(db, permission_in=permission_in)
+    permission = crud.permission.create_permission(db, permission_in=permission_in)
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
+    return permission
 
 
 @router.get("/{permission_id}", response_model=PermissionSchema)
@@ -44,6 +51,8 @@ def read_permission(
     """
     Get permission by ID.
     """
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
     return permission
 
 
@@ -57,7 +66,10 @@ def update_permission(
     """
     Update a permission.
     """
-    return crud.permission.update_permission(db, db_obj=permission, obj_in=permission_in)
+    updated_permission = crud.permission.update_permission(db, db_obj=permission, obj_in=permission_in)
+    if updated_permission.resource_type:
+        updated_permission.resource = updated_permission.resource_type.name
+    return updated_permission
 
 
 @router.delete("/{permission_id}", response_model=PermissionSchema)
@@ -69,5 +81,7 @@ def delete_permission(
     """
     Delete a permission.
     """
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
     crud.permission.delete_permission(db, permission_id=permission.id)
     return permission

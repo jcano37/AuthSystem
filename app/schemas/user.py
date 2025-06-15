@@ -146,6 +146,7 @@ class Permission(PermissionBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
+    resource: Optional[str] = None  # This will be populated from resource_type.name
 
     class Config:
         from_attributes = True
