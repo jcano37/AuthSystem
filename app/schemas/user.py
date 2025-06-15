@@ -76,6 +76,32 @@ class PasswordReset(BaseModel):
     new_password: Annotated[str, Field(min_length=8)]
 
 
+# Session schemas
+class UserSessionBase(BaseModel):
+    device_info: Optional[str] = None
+    ip_address: Optional[str] = None
+
+
+class UserSessionSchema(UserSessionBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    expires_at: datetime
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Statistics schemas
+class ActiveUsersStats(BaseModel):
+    active_sessions_24h: int
+    active_users_24h: int
+    total_active_sessions: int
+    total_users: int
+    new_users_7d: int
+
+
 # Role schemas
 class RoleBase(BaseModel):
     name: str
