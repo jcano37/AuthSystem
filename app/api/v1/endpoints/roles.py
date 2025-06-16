@@ -10,17 +10,18 @@ router = APIRouter()
 
 
 # Role endpoints
-@router.get("/", response_model=List[RoleSchema])
+@router.get("/", response_model=List[RoleWithPermissions])
 def read_roles(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
         limit: int = 100,
+        include_permissions: bool = True,
         _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    Retrieve roles.
+    Retrieve roles with optional permissions.
     """
-    roles = crud.role.get_roles(db, skip=skip, limit=limit)
+    roles = crud.role.get_roles(db, skip=skip, limit=limit, include_permissions=include_permissions)
     return roles
 
 

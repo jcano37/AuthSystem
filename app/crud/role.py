@@ -1,5 +1,5 @@
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from fastapi import HTTPException, status
 from app.models.user import Role, Permission
 from app.schemas.user import RoleCreate, RoleUpdate
@@ -10,11 +10,14 @@ def get_role_by_name(db: Session, name: str) -> Optional[Role]:
 
 
 def get_role(db: Session, role_id: int) -> Optional[Role]:
-    return db.query(Role).filter(Role.id == role_id).first()
+    return db.query(Role).options(selectinload(Role.permissions)).filter(Role.id == role_id).first()
 
 
-def get_roles(db: Session, skip: int = 0, limit: int = 100) -> List[Role]:
-    return db.query(Role).offset(skip).limit(limit).all()
+def get_roles(db: Session, skip: int = 0, limit: int = 100, include_permissions: bool = True) -> List[Role]:
+    query = db.query(Role)
+    if include_permissions:
+        query = query.options(selectinload(Role.permissions))
+    return query.offset(skip).limit(limit).all()
 
 
 def create_role(db: Session, *, role_in: RoleCreate) -> Role:
