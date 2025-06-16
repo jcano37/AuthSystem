@@ -1,10 +1,13 @@
-from typing import Any, List, Union
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from app import crud
 from app.api import deps
-from app.models.user import Role, Permission, User
-from app.schemas.user import Role as RoleSchema, RoleCreate, RoleUpdate, RoleWithPermissions
+from app.models.user import Permission, Role, User
+from app.schemas.user import Role as RoleSchema
+from app.schemas.user import RoleCreate, RoleUpdate, RoleWithPermissions
 
 router = APIRouter()
 
@@ -12,17 +15,19 @@ router = APIRouter()
 # Role endpoints
 @router.get("/")
 def read_roles(
-        db: Session = Depends(deps.get_db),
-        skip: int = 0,
-        limit: int = 100,
-        include_permissions: bool = True,
-        _: User = Depends(deps.get_current_active_superuser),
+    db: Session = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 100,
+    include_permissions: bool = True,
+    _: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Retrieve roles with optional permissions.
     """
-    roles = crud.role.get_roles(db, skip=skip, limit=limit, include_permissions=include_permissions)
-    
+    roles = crud.role.get_roles(
+        db, skip=skip, limit=limit, include_permissions=include_permissions
+    )
+
     if include_permissions:
         # Return roles with permissions
         return [RoleWithPermissions.model_validate(role) for role in roles]
@@ -33,8 +38,8 @@ def read_roles(
 
 @router.get("/{role_id}", response_model=RoleWithPermissions)
 def read_role(
-        *,
-        role: Role = Depends(deps.get_role_by_id_from_path),
+    *,
+    role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Get role by ID with permissions.
@@ -44,10 +49,10 @@ def read_role(
 
 @router.post("/", response_model=RoleSchema)
 def create_role(
-        *,
-        db: Session = Depends(deps.get_db),
-        role_in: RoleCreate,
-        _=Depends(deps.get_current_active_superuser),
+    *,
+    db: Session = Depends(deps.get_db),
+    role_in: RoleCreate,
+    _=Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new role.
@@ -57,10 +62,10 @@ def create_role(
 
 @router.put("/{role_id}", response_model=RoleSchema)
 def update_role(
-        *,
-        db: Session = Depends(deps.get_db),
-        role_in: RoleUpdate,
-        role: Role = Depends(deps.get_role_by_id_from_path),
+    *,
+    db: Session = Depends(deps.get_db),
+    role_in: RoleUpdate,
+    role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Update a role.
@@ -70,9 +75,9 @@ def update_role(
 
 @router.delete("/{role_id}", response_model=RoleSchema)
 def delete_role(
-        *,
-        db: Session = Depends(deps.get_db),
-        role: Role = Depends(deps.get_role_by_id_from_path),
+    *,
+    db: Session = Depends(deps.get_db),
+    role: Role = Depends(deps.get_role_by_id_from_path),
 ) -> Any:
     """
     Delete a role.
@@ -81,12 +86,14 @@ def delete_role(
     return role
 
 
-@router.post("/{role_id}/permissions/{permission_id}", response_model=RoleWithPermissions)
+@router.post(
+    "/{role_id}/permissions/{permission_id}", response_model=RoleWithPermissions
+)
 def assign_permission_to_role(
-        *,
-        db: Session = Depends(deps.get_db),
-        role: Role = Depends(deps.get_role_by_id_from_path),
-        permission: Permission = Depends(deps.get_permission_by_id_from_path),
+    *,
+    db: Session = Depends(deps.get_db),
+    role: Role = Depends(deps.get_role_by_id_from_path),
+    permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Assign a permission to a role.
@@ -94,12 +101,14 @@ def assign_permission_to_role(
     return crud.role.assign_permission_to_role(db, role=role, permission=permission)
 
 
-@router.delete("/{role_id}/permissions/{permission_id}", response_model=RoleWithPermissions)
+@router.delete(
+    "/{role_id}/permissions/{permission_id}", response_model=RoleWithPermissions
+)
 def remove_permission_from_role(
-        *,
-        db: Session = Depends(deps.get_db),
-        role: Role = Depends(deps.get_role_by_id_from_path),
-        permission: Permission = Depends(deps.get_permission_by_id_from_path),
+    *,
+    db: Session = Depends(deps.get_db),
+    role: Role = Depends(deps.get_role_by_id_from_path),
+    permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Remove a permission from a role.

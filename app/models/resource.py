@@ -1,7 +1,9 @@
-from sqlalchemy import Column, String, DateTime, Integer
-from sqlalchemy.orm import relationship
-from app.db.base_class import Base
 from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship
+
+from app.db.base_class import Base
 
 
 class ResourceType(Base):

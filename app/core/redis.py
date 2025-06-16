@@ -1,4 +1,5 @@
 import redis
+
 from app.core.config import settings
 
 redis_url = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}"
