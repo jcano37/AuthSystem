@@ -33,18 +33,6 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
         
-    - name: Check imports sorting with isort
-      run: python -m isort --check-only --diff app
-      
-    - name: Check code formatting with Black
-      run: python -m black --check --diff app
-      
-    - name: Lint with flake8
-      run: python -m flake8 app
-      
-    - name: Type check with mypy
-      run: python -m mypy app
-      
-    - name: Run format_and_check.ps1 script
+    - name: Run code quality checks
       shell: pwsh
-      run: ./format_and_check.ps1 --check-only --verbose 
+      run: ./format_and_check.ps1 --check-only --verbose
