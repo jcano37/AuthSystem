@@ -95,7 +95,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{LOCAL}}/api/v1/auth/refresh?refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAxMDQ2MjQsInN1YiI6IjIiLCJ0eXBlIjoicmVmcmVzaCJ9.PZhofxaMC_b9MHQFtkJa2aK4hLTFduD2OPobNP9U1_A",
+							"raw": "{{LOCAL}}/api/v1/auth/refresh?refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAxNzI4NzUsInN1YiI6IjEiLCJ0eXBlIjoicmVmcmVzaCJ9.f1DvdLarp-ZrAwx3Y1v9JNrHkypnRbq73L7Y9jrh8Uo",
 							"host": [
 								"{{LOCAL}}"
 							],
@@ -108,7 +108,7 @@
 							"query": [
 								{
 									"key": "refresh_token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAxMDQ2MjQsInN1YiI6IjIiLCJ0eXBlIjoicmVmcmVzaCJ9.PZhofxaMC_b9MHQFtkJa2aK4hLTFduD2OPobNP9U1_A"
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAxNzI4NzUsInN1YiI6IjEiLCJ0eXBlIjoicmVmcmVzaCJ9.f1DvdLarp-ZrAwx3Y1v9JNrHkypnRbq73L7Y9jrh8Uo"
 								}
 							]
 						}
@@ -243,7 +243,7 @@
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "2"
+									"value": "1"
 								}
 							]
 						}
@@ -269,7 +269,7 @@
 							"variable": [
 								{
 									"key": "user_id",
-									"value": "2"
+									"value": "1"
 								}
 							]
 						}
@@ -406,7 +406,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"test2\",\r\n    \"description\": \"Test Usuario\"\r\n}",
+							"raw": "{\r\n    \"name\": \"test1\",\r\n    \"description\": \"Test Usuario\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -507,7 +507,7 @@
 							"variable": [
 								{
 									"key": "role_id",
-									"value": "3"
+									"value": "2"
 								},
 								{
 									"key": "permission_id",
@@ -539,7 +539,7 @@
 							"variable": [
 								{
 									"key": "role_id",
-									"value": "3"
+									"value": "2"
 								},
 								{
 									"key": "permission_id",
@@ -582,7 +582,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Permiso1\",\r\n  \"description\": \"Permiso Test\",\r\n  \"resource\": \"profile\",\r\n  \"action\": \"delete\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Permiso1\",\r\n    \"description\": \"Permiso Test\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"delete\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -610,7 +610,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Permiso1\",\r\n    \"description\": \"Permiso Update\",\r\n    \"resource\": \"profile\",\r\n    \"action\": \"find\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Permiso2\",\r\n    \"description\": \"Permiso Update\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"find2\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -657,7 +657,7 @@
 							"variable": [
 								{
 									"key": "permission_id",
-									"value": "2"
+									"value": "1"
 								}
 							]
 						}
@@ -683,7 +683,122 @@
 							"variable": [
 								{
 									"key": "permission_id",
-									"value": "2"
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Resources",
+			"item": [
+				{
+					"name": "Retrieve Resource",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL}}/api/v1/resources/",
+							"host": [
+								"{{LOCAL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"resources",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Resource",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Test2\",\r\n    \"description\": \"Recurso Test2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL}}/api/v1/resources/",
+							"host": [
+								"{{LOCAL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"resources",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Resource",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"recurso update\",\r\n    \"description\": \"update recurso\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{LOCAL}}/api/v1/resources/:resource_type_id",
+							"host": [
+								"{{LOCAL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"resources",
+								":resource_type_id"
+							],
+							"variable": [
+								{
+									"key": "resource_type_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Resource",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{LOCAL}}/api/v1/resources/:resource_type_id",
+							"host": [
+								"{{LOCAL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"resources",
+								":resource_type_id"
+							],
+							"variable": [
+								{
+									"key": "resource_type_id",
+									"value": "4"
 								}
 							]
 						}

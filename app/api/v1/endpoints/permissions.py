@@ -1,9 +1,9 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app import crud
 from app.api import deps
-from app.models.user import Permission, User
+from app.models.user import Permission
 from app.schemas.user import Permission as PermissionSchema, PermissionCreate, PermissionUpdate
 
 router = APIRouter()
@@ -14,12 +14,16 @@ def read_permissions(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
         limit: int = 100,
-        _: User = Depends(deps.get_current_active_superuser),
+        _=Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Retrieve permissions.
     """
-    permissions = db.query(Permission).offset(skip).limit(limit).all()
+    permissions = crud.permission.get_permissions(db, skip=skip, limit=limit)
+    # Add resource name to each permission
+    for permission in permissions:
+        if permission.resource_type:
+            permission.resource = permission.resource_type.name
     return permissions
 
 
@@ -28,40 +32,27 @@ def create_permission(
         *,
         db: Session = Depends(deps.get_db),
         permission_in: PermissionCreate,
-        _: User = Depends(deps.get_current_active_superuser),
+        _=Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new permission.
     """
-    permission = db.query(Permission).filter(Permission.name == permission_in.name).first()
-    if permission:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The permission with this name already exists in the system.",
-        )
-    permission = Permission(**permission_in.dict())
-    db.add(permission)
-    db.commit()
-    db.refresh(permission)
+    permission = crud.permission.create_permission(db, permission_in=permission_in)
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
     return permission
 
 
 @router.get("/{permission_id}", response_model=PermissionSchema)
 def read_permission(
         *,
-        db: Session = Depends(deps.get_db),
-        permission_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Get permission by ID.
     """
-    permission = db.query(Permission).filter(Permission.id == permission_id).first()
-    if not permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found",
-        )
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
     return permission
 
 
@@ -69,53 +60,28 @@ def read_permission(
 def update_permission(
         *,
         db: Session = Depends(deps.get_db),
-        permission_id: int,
         permission_in: PermissionUpdate,
-        _: User = Depends(deps.get_current_active_superuser),
+        permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Update a permission.
     """
-    permission = db.query(Permission).filter(Permission.id == permission_id).first()
-    if not permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found",
-        )
-    
-    # Si se está cambiando el nombre, verificar que no exista otro permiso con ese nombre
-    if permission_in.name and permission_in.name != permission.name:
-        existing_permission = db.query(Permission).filter(Permission.name == permission_in.name).first()
-        if existing_permission:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The permission with this name already exists in the system.",
-            )
-    
-    for field, value in permission_in.dict(exclude_unset=True).items():
-        setattr(permission, field, value)
-    db.add(permission)
-    db.commit()
-    db.refresh(permission)
-    return permission
+    updated_permission = crud.permission.update_permission(db, db_obj=permission, obj_in=permission_in)
+    if updated_permission.resource_type:
+        updated_permission.resource = updated_permission.resource_type.name
+    return updated_permission
 
 
 @router.delete("/{permission_id}", response_model=PermissionSchema)
 def delete_permission(
         *,
         db: Session = Depends(deps.get_db),
-        permission_id: int,
-        _: User = Depends(deps.get_current_active_superuser),
+        permission: Permission = Depends(deps.get_permission_by_id_from_path),
 ) -> Any:
     """
     Delete a permission.
     """
-    permission = db.query(Permission).filter(Permission.id == permission_id).first()
-    if not permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found",
-        )
-    db.delete(permission)
-    db.commit()
-    return permission 
+    if permission.resource_type:
+        permission.resource = permission.resource_type.name
+    crud.permission.delete_permission(db, permission_id=permission.id)
+    return permission

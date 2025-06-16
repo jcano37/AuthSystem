@@ -1,16 +1,15 @@
 from datetime import datetime, timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
 from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.redis import add_to_blacklist
-from app.core.utils import get_user_by_email_or_username, create_user_from_schema
+from app import crud
 from app.models.user import User, Session as UserSession
-from app.schemas.user import Token, UserCreate, User as UserSchema
+from app.schemas.user import Token, UserCreate, User as UserSchema, TokenRefresh, PasswordResetRequest, PasswordReset
 from app.core.security import verify_password
 
 router = APIRouter()
@@ -19,12 +18,13 @@ router = APIRouter()
 @router.post("/login", response_model=Token)
 def login(
         db: Session = Depends(deps.get_db),
-        form_data: OAuth2PasswordRequestForm = Depends()
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        request: Request = None
 ) -> Any:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = get_user_by_email_or_username(db, form_data.username, form_data.username)
+    user = crud.user.get_by_email_or_username(db, email=form_data.username, username=form_data.username)
 
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -50,8 +50,8 @@ def login(
     session = UserSession(
         user_id=user.id,
         refresh_token=refresh_token,
-        device_info="Web",  # You can enhance this with actual device info
-        ip_address="127.0.0.1",  # You can enhance this with actual IP
+        device_info=request.headers.get("User-Agent", "Unknown"),
+        ip_address=request.client.host,
         expires_at=datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     )
     db.add(session)
@@ -74,7 +74,8 @@ def register(
     Create new user.
     """
     try:
-        return create_user_from_schema(db, user_in, is_active=user_in.is_active, is_superuser=user_in.is_superuser)
+        user = crud.user.create_user(db, user_in=user_in)
+        return user
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -88,13 +89,13 @@ def register(
 def refresh_token(
         *,
         db: Session = Depends(deps.get_db),
-        refresh_token: str,
+        token_data: TokenRefresh,
 ) -> Any:
     """
     Refresh access token
     """
     try:
-        payload = security.verify_token(refresh_token)
+        payload = security.verify_token(token_data.refresh_token)
         if not payload or payload.get("type") != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -111,7 +112,7 @@ def refresh_token(
         # Verify session exists and is valid
         session = db.query(UserSession).filter(
             UserSession.user_id == user_id,
-            UserSession.refresh_token == refresh_token,
+            UserSession.refresh_token == token_data.refresh_token,
             UserSession.is_active == True,
             UserSession.expires_at > datetime.utcnow()
         ).first()
@@ -172,3 +173,45 @@ def logout(
         db.commit()
 
     return {"message": "Successfully logged out"}
+
+
+@router.post("/password-reset-request", status_code=status.HTTP_202_ACCEPTED)
+def request_password_reset(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    password_reset_request: PasswordResetRequest
+) -> Any:
+    """
+    Request password reset. This will trigger an email to be sent to the user.
+    """
+    user = crud.user.get_user_by_email(db, email=password_reset_request.email)
+    if not user:
+        # For security, we don't reveal if the user exists or not.
+        # We'll just return a 202 Accepted status in any case.
+        return {"message": "If a matching account exists, an email will be sent with instructions."}
+
+    password_reset_token = crud.user.create_password_reset_token(db, user=user)
+    # TODO: Send an email to the user with the token.
+    # For development, we'll return the token in the response.
+    print(f"Password reset token for {user.email}: {password_reset_token.token}")
+    return {"message": "If a matching account exists, an email will be sent with instructions."}
+
+
+@router.post("/password-reset")
+def reset_password(
+    *, 
+    db: Session = Depends(deps.get_db), 
+    password_reset: PasswordReset
+) -> Any:
+    """
+    Reset password using the token from the email.
+    """
+    token_obj = crud.user.get_password_reset_token_by_token(db, token=password_reset.token)
+    if not token_obj or token_obj.is_used or token_obj.expires_at < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+
+    crud.user.reset_password(db, token_obj=token_obj, new_password=password_reset.new_password)
+    return {"message": "Password updated successfully"}

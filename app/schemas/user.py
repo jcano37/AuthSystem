@@ -1,6 +1,6 @@
+from datetime import datetime
 from typing import Optional, Annotated, List
 from pydantic import BaseModel, EmailStr, Field
-from datetime import datetime
 
 
 # Shared properties
@@ -19,7 +19,7 @@ class UserCreate(UserBase):
     password: Annotated[str, Field(min_length=8)]
     full_name: str
     is_superuser: bool = False
-    is_active: bool = False
+    is_active: bool = True
 
 
 # Properties to receive via API on update
@@ -62,6 +62,46 @@ class TokenPayload(BaseModel):
     type: Optional[str] = None
 
 
+class TokenRefresh(BaseModel):
+    refresh_token: str
+
+
+# Password reset schemas
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: Annotated[str, Field(min_length=8)]
+
+
+# Session schemas
+class UserSessionBase(BaseModel):
+    device_info: Optional[str] = None
+    ip_address: Optional[str] = None
+
+
+class UserSessionSchema(UserSessionBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    expires_at: datetime
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Statistics schemas
+class ActiveUsersStats(BaseModel):
+    active_sessions_24h: int
+    active_users_24h: int
+    total_active_sessions: int
+    total_users: int
+    new_users_7d: int
+
+
 # Role schemas
 class RoleBase(BaseModel):
     name: str
@@ -90,7 +130,7 @@ class Role(RoleBase):
 class PermissionBase(BaseModel):
     name: str
     description: Optional[str] = None
-    resource: str
+    resource_type_id: int
     action: str
 
 
@@ -106,6 +146,7 @@ class Permission(PermissionBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
+    resource: Optional[str] = None  # This will be populated from resource_type.name
 
     class Config:
         from_attributes = True

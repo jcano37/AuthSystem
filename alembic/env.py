@@ -70,29 +70,29 @@ def run_migrations_online() -> None:
     """
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
-    
+
     # Optimized pool settings
     if not configuration.get("sqlalchemy.pool_size"):
         configuration["sqlalchemy.pool_size"] = "5"
     if not configuration.get("sqlalchemy.max_overflow"):
         configuration["sqlalchemy.max_overflow"] = "10"
-    
-    # Establecer directamente los argumentos de conexión
+
+    # Set connection arguments directly
     connect_args = {
-        "connect_timeout": 15,  # Timeout de conexión en segundos
+        "connect_timeout": 15,  # Connection timeout in seconds
     }
-        
+
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.QueuePool,  # Using QueuePool for better performance
-        connect_args=connect_args  # Pasar argumentos de conexión explícitamente
+        connect_args=connect_args  # Pass connection arguments explicitly
     )
 
     with connectable.connect() as connection:
         # Enable batch operations for better performance
         context.configure(
-            connection=connection, 
+            connection=connection,
             target_metadata=target_metadata,
             # Enable batch mode for better performance with larger migrations
             render_as_batch=True,

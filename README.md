@@ -1,144 +1,203 @@
-# Sistema de Autenticación
+# Authentication System
 
-Un servicio robusto de autenticación y autorización construido con FastAPI, que soporta JWT y OAuth2 Password Flow.
+A robust authentication and authorization service built with FastAPI, supporting JWT and OAuth2 Password Flow. This system provides a solid foundation for managing users, roles, and permissions in modern applications.
 
-## Características
+## Main Features
 
-- Autenticación de usuarios con tokens JWT
-- Control de acceso basado en roles (RBAC)
-- Gestión de sesiones con Redis
-- Cifrado de contraseñas con bcrypt
-- Verificación de correo electrónico
-- Funcionalidad de restablecimiento de contraseña
-- Limitación de tasa de solicitudes
-- Soporte para Docker
-- Migraciones de base de datos con Alembic
+- User authentication with JWT tokens
+- Role-based access control (RBAC)
+- Session management with Redis
+- Password encryption with bcrypt
+- Email verification
+- Password reset functionality
+- Request rate limiting
+- Docker support
+- Database migrations with Alembic
+- Data validation with Pydantic
+- Complete test suite
 
-## Requisitos Previos
+## Prerequisites
 
-- Docker y Docker Compose
+- Docker and Docker Compose
 - Python 3.11+
 - PostgreSQL 16+
 - Redis 7+
 
-## Inicio Rápido
+## Main Dependencies
 
-1. Clona el repositorio:
+- FastAPI 0.109.2
+- Uvicorn 0.27.1
+- SQLAlchemy 2.0.27
+- Pydantic 2.6.1
+- Python-Jose 3.3.0
+- Passlib 1.7.4
+- Redis 5.0.1
+- Alembic 1.13.1
+- Pytest 8.0.0
+
+## Quick Start
+
+1. Clone the repository:
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd auth-service
 ```
 
-2. Crea un archivo `.env` en el directorio raíz:
+2. Create a `.env` file in the root directory:
 ```env
+# Database
 DATABASE_URL=postgresql://postgres:postgres@db:5432/auth_db
+
+# Redis
 REDIS_URL=redis://redis:6379/0
-SECRET_KEY=tu-clave-secreta-aqui
+
+# Security
+SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=15
 REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Email (optional)
+SMTP_TLS=True
+SMTP_PORT=587
+SMTP_HOST=smtp.gmail.com
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-application-password
 ```
 
-3. Construye e inicia los contenedores:
+3. Build and start the containers:
 ```bash
 docker-compose up --build
 ```
 
-4. Ejecuta las migraciones de la base de datos:
+4. Run the database migrations:
 ```bash
 docker-compose exec app alembic upgrade head
 ```
 
-El servicio estará disponible en `http://localhost:8000`
+The service will be available at `http://localhost:8000`
 
-## Documentación de la API
+## API Documentation
 
-Una vez que el servicio esté en ejecución, puedes acceder a:
+Once the service is running, you can access:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-## Endpoints de la API
+## API Endpoints
 
-### Autenticación
-- `POST /api/v1/auth/login` - Iniciar sesión con usuario/correo y contraseña
-- `POST /api/v1/auth/register` - Registrar un nuevo usuario
-- `POST /api/v1/auth/refresh` - Renovar token de acceso
-- `POST /api/v1/auth/logout` - Cerrar sesión e invalidar sesión
+### Authentication
+- `POST /api/v1/auth/login` - Login with user/email and password
+- `POST /api/v1/auth/register` - Register a new user
+- `POST /api/v1/auth/refresh` - Refresh access token
+- `POST /api/v1/auth/logout` - Logout and invalidate session
+- `POST /api/v1/auth/verify-email` - Verify email
+- `POST /api/v1/auth/reset-password` - Request password reset
+- `POST /api/v1/auth/reset-password-confirm` - Confirm password reset
 
-### Usuarios
-- `GET /api/v1/users/me` - Obtener usuario actual
-- `PUT /api/v1/users/me` - Actualizar usuario actual
-- `GET /api/v1/users/{user_id}` - Obtener usuario por ID
-- `GET /api/v1/users/` - Listar usuarios (solo administradores)
-- `POST /api/v1/users/` - Crear usuario (solo administradores)
-- `PUT /api/v1/users/{user_id}` - Actualizar usuario (solo administradores)
-- `DELETE /api/v1/users/{user_id}` - Eliminar usuario (solo administradores)
+### Users
+- `GET /api/v1/users/me` - Get current user
+- `PUT /api/v1/users/me` - Update current user
+- `GET /api/v1/users/{user_id}` - Get user by ID
+- `GET /api/v1/users/` - List users (admins only)
+- `POST /api/v1/users/` - Create user (admins only)
+- `PUT /api/v1/users/{user_id}` - Update user (admins only)
+- `DELETE /api/v1/users/{user_id}` - Delete user (admins only)
 
-### Roles y Permisos
-- `GET /api/v1/roles/` - Listar roles
-- `POST /api/v1/roles/` - Crear rol
-- `PUT /api/v1/roles/{role_id}` - Actualizar rol
-- `DELETE /api/v1/roles/{role_id}` - Eliminar rol
-- `GET /api/v1/roles/permissions` - Listar permisos
-- `POST /api/v1/roles/permissions` - Crear permiso
-- `PUT /api/v1/roles/permissions/{permission_id}` - Actualizar permiso
-- `DELETE /api/v1/roles/permissions/{permission_id}` - Eliminar permiso
+### Roles and Permissions
+- `GET /api/v1/roles/` - List roles
+- `POST /api/v1/roles/` - Create role
+- `PUT /api/v1/roles/{role_id}` - Update role
+- `DELETE /api/v1/roles/{role_id}` - Delete role
+- `GET /api/v1/roles/permissions` - List permissions
+- `POST /api/v1/roles/permissions` - Create permission
+- `PUT /api/v1/roles/permissions/{permission_id}` - Update permission
+- `DELETE /api/v1/roles/permissions/{permission_id}` - Delete permission
 
-## Desarrollo
+## Project Structure
 
-### Estructura del Proyecto
 ```
 auth-service/
-├── alembic/              # Migraciones de base de datos
+├── alembic/              # Database migrations
 ├── app/
-│   ├── api/             # Endpoints de la API
-│   ├── core/            # Funcionalidad principal
-│   ├── db/              # Configuración de base de datos
-│   ├── models/          # Modelos SQLAlchemy
-│   └── schemas/         # Esquemas Pydantic
-├── tests/               # Archivos de prueba
-├── .env                 # Variables de entorno
-├── docker-compose.yml   # Configuración de Docker
-├── Dockerfile          # Archivo de construcción Docker
-└── requirements.txt    # Dependencias de Python
+│   ├── api/             # API Endpoints
+│   │   ├── v1/         # API Version 1
+│   │   └── deps.py     # API Dependencies
+│   ├── core/           # Configuration and utilities
+│   │   ├── config.py   # Application configuration
+│   │   └── security.py # Security functions
+│   ├── db/             # Database configuration
+│   ├── models/         # SQLAlchemy models
+│   └── schemas/        # Pydantic schemas
+├── tests/              # Unit and integration tests
+├── .env               # Environment variables
+├── docker-compose.yml # Docker configuration
+├── Dockerfile        # Docker build file
+└── requirements.txt  # Python dependencies
 ```
 
-### Ejecutar Pruebas
+## Development and Testing
+
+### Run Tests
 ```bash
+# Run all tests
 docker-compose exec app pytest
+
+# Run tests with coverage
+docker-compose exec app pytest --cov=app tests/
+
+# Run specific tests
+docker-compose exec app pytest tests/test_auth.py
 ```
 
-### Migraciones de Base de Datos
+### Database Migrations
 ```bash
-# Crear una nueva migración
-docker-compose exec app alembic revision --autogenerate -m "descripción"
+# Create a new migration
+docker-compose exec app alembic revision --autogenerate -m "description"
 
-# Aplicar migraciones
+# Apply migrations
 docker-compose exec app alembic upgrade head
 
-# Revertir migraciones
+# Revert migrations
 docker-compose exec app alembic downgrade -1
 ```
 
-## Características de Seguridad
+## Security Features
 
-- Cifrado de contraseñas con bcrypt
-- Autenticación basada en tokens JWT
-- Lista negra de tokens para cierre de sesión
-- Limitación de tasa para prevenir ataques de fuerza bruta
-- Control de acceso basado en roles
-- Gestión de sesiones
-- Flujo seguro de restablecimiento de contraseña
-- Verificación de correo electrónico
+- Password encryption with bcrypt
+- JWT-based token authentication
+- Token blacklist for logout
+- Rate limiting to prevent brute-force attacks
+- Role-based access control
+- Session management with Redis
+- Secure password reset flow
+- Email verification
+- Security headers (CORS, CSP, etc.)
+- Data validation with Pydantic
 
-## Contribuir
+## Contributing
 
-1. Haz un fork del repositorio
-2. Crea una rama para tu característica
-3. Realiza tus cambios
-4. Envía tus cambios a la rama
-5. Crea un Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Make your changes
+4. Make sure the tests pass (`pytest`)
+5. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+6. Push to the branch (`git push origin feature/AmazingFeature`)
+7. Open a Pull Request
 
-## Licencia
+## License
 
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo LICENSE para más detalles. 
+This project is licensed under the MIT License - see the LICENSE file for more details.
+
+## Support
+
+If you encounter any issues or have suggestions, please:
+1. Review the documentation
+2. Search existing issues
+3. Create a new issue if necessary
+
+## Acknowledgements
+
+- FastAPI for the excellent framework
+- SQLAlchemy for the ORM
+- Pydantic for data validation
+- The open-source community
