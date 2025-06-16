@@ -1,5 +1,5 @@
 # Framework web
-fastapi==0.109.2
+fastapi==0.115.0
 uvicorn==0.27.1
 
 # Autenticación y seguridad
