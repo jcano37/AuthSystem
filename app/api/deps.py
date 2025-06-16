@@ -1,21 +1,21 @@
 from typing import Generator
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+
 from app import crud
 from app.core.config import settings
 from app.core.redis import is_blacklisted
 from app.core.security import verify_token
 from app.db.session import SessionLocal
 from app.models.resource import ResourceType
-from app.models.user import User, Permission, Role
+from app.models.user import Permission, Role, User
 from app.schemas.user import TokenPayload
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/login"
-)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 
 def get_db() -> Generator:
@@ -27,8 +27,7 @@ def get_db() -> Generator:
 
 
 def get_current_user(
-        db: Session = Depends(get_db),
-        token: str = Depends(reusable_oauth2)
+    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> User:
     try:
         # Check if token is blacklisted
@@ -64,42 +63,39 @@ def get_current_user(
     user = db.query(User).filter(User.id == token_data.sub).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
     return user
 
 
 def get_current_active_user(
-        current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> User:
     if not current_user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
         )
     return current_user
 
 
 def get_current_active_superuser(
-        current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="The user doesn't have enough privileges"
+            detail="The user doesn't have enough privileges",
         )
     return current_user
 
 
 def check_permissions(required_permissions: list[str]):
     def permission_checker(
-            current_user: User = Depends(get_current_user),
+        current_user: User = Depends(get_current_user),
     ) -> User:
         user_permissions = []
         for role in current_user.roles:
@@ -108,8 +104,7 @@ def check_permissions(required_permissions: list[str]):
 
         if not all(perm in user_permissions for perm in required_permissions):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions"
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
             )
         return current_user
 
@@ -117,9 +112,9 @@ def check_permissions(required_permissions: list[str]):
 
 
 def get_user_by_id_from_path(
-        user_id: int,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_active_user),
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ) -> User:
     user = crud.user.get_user_by_id(db, user_id=user_id)
     if not user:
@@ -136,9 +131,9 @@ def get_user_by_id_from_path(
 
 
 def get_permission_by_id_from_path(
-        permission_id: int,
-        db: Session = Depends(get_db),
-        _current_user: User = Depends(get_current_active_superuser),
+    permission_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_active_superuser),
 ) -> Permission:
     permission = crud.permission.get_permission(db, permission_id=permission_id)
     if not permission:
@@ -150,9 +145,9 @@ def get_permission_by_id_from_path(
 
 
 def get_role_by_id_from_path(
-        role_id: int,
-        db: Session = Depends(get_db),
-        _current_user: User = Depends(get_current_active_superuser),
+    role_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_active_superuser),
 ) -> Role:
     role = crud.role.get_role(db, role_id=role_id)
     if not role:
@@ -164,11 +159,13 @@ def get_role_by_id_from_path(
 
 
 def get_resource_type_by_id_from_path(
-        resource_type_id: int,
-        db: Session = Depends(get_db),
-        _current_user: User = Depends(get_current_active_superuser),
+    resource_type_id: int,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_active_superuser),
 ) -> ResourceType:
-    resource_type = crud.resource.get_resource_type(db, resource_type_id=resource_type_id)
+    resource_type = crud.resource.get_resource_type(
+        db, resource_type_id=resource_type_id
+    )
     if not resource_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,11 +1,13 @@
 import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
-from sqlalchemy.orm import Session
+from typing import Any, Dict, Optional
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.models.user import User, PasswordResetToken
+from app.models.user import PasswordResetToken, User
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -21,8 +23,14 @@ def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_by_email_or_username(db: Session, *, email: str, username: str) -> Optional[User]:
-    return db.query(User).filter((User.email == email) | (User.username == username)).first()
+def get_by_email_or_username(
+    db: Session, *, email: str, username: str
+) -> Optional[User]:
+    return (
+        db.query(User)
+        .filter((User.email == email) | (User.username == username))
+        .first()
+    )
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
@@ -55,7 +63,9 @@ def create_user(db: Session, *, user_in: UserCreate) -> User:
     return db_obj
 
 
-def update_user(db: Session, *, db_obj: User, obj_in: UserUpdate | Dict[str, Any]) -> User:
+def update_user(
+    db: Session, *, db_obj: User, obj_in: UserUpdate | Dict[str, Any]
+) -> User:
     if isinstance(obj_in, dict):
         update_data = obj_in
     else:
@@ -85,40 +95,42 @@ def delete_user(db: Session, *, user_id: int) -> Optional[User]:
 
 def create_password_reset_token(db: Session, *, user: User) -> PasswordResetToken:
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS)
-    db_token = PasswordResetToken(
-        user_id=user.id,
-        token=token,
-        expires_at=expires_at
+    expires_at = datetime.utcnow() + timedelta(
+        hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
     )
+    db_token = PasswordResetToken(user_id=user.id, token=token, expires_at=expires_at)
     db.add(db_token)
     db.commit()
     db.refresh(db_token)
     return db_token
 
 
-def get_password_reset_token_by_token(db: Session, *, token: str) -> Optional[PasswordResetToken]:
-    return db.query(PasswordResetToken).filter(PasswordResetToken.token == token).first()
+def get_password_reset_token_by_token(
+    db: Session, *, token: str
+) -> Optional[PasswordResetToken]:
+    return (
+        db.query(PasswordResetToken).filter(PasswordResetToken.token == token).first()
+    )
 
 
-def reset_password(db: Session, *, token_obj: PasswordResetToken, new_password: str) -> None:
+def reset_password(
+    db: Session, *, token_obj: PasswordResetToken, new_password: str
+) -> None:
     if token_obj.is_used:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token has already been used"
+            detail="Token has already been used",
         )
     if token_obj.expires_at < datetime.utcnow():
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token has expired"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Token has expired"
         )
 
     user = get_user_by_id(db, user_id=token_obj.user_id)
     if not user:
         # This should not happen if the token is valid, but as a safeguard
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
     hashed_password = get_password_hash(new_password)

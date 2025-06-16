@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, Annotated, List
+from typing import Annotated, List, Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -74,23 +75,6 @@ class PasswordResetRequest(BaseModel):
 class PasswordReset(BaseModel):
     token: str
     new_password: Annotated[str, Field(min_length=8)]
-
-
-# Session schemas
-class UserSessionBase(BaseModel):
-    device_info: Optional[str] = None
-    ip_address: Optional[str] = None
-
-
-class UserSessionSchema(UserSessionBase):
-    id: int
-    user_id: int
-    created_at: datetime
-    expires_at: datetime
-    is_active: bool
-
-    class Config:
-        from_attributes = True
 
 
 # Statistics schemas

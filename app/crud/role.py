@@ -1,7 +1,9 @@
-from typing import Optional, List
-from sqlalchemy.orm import Session, selectinload
+from typing import List, Optional
+
 from fastapi import HTTPException, status
-from app.models.user import Role, Permission
+from sqlalchemy.orm import Session, selectinload
+
+from app.models.user import Permission, Role
 from app.schemas.user import RoleCreate, RoleUpdate
 
 
@@ -10,13 +12,22 @@ def get_role_by_name(db: Session, name: str) -> Optional[Role]:
 
 
 def get_role(db: Session, role_id: int) -> Optional[Role]:
-    return db.query(Role).options(selectinload(Role.permissions)).filter(Role.id == role_id).first()
+    return (
+        db.query(Role)
+        .options(selectinload(Role.permissions).selectinload(Permission.resource_type))
+        .filter(Role.id == role_id)
+        .first()
+    )
 
 
-def get_roles(db: Session, skip: int = 0, limit: int = 100, include_permissions: bool = True) -> List[Role]:
+def get_roles(
+    db: Session, skip: int = 0, limit: int = 100, include_permissions: bool = True
+) -> List[Role]:
     query = db.query(Role)
     if include_permissions:
-        query = query.options(selectinload(Role.permissions))
+        query = query.options(
+            selectinload(Role.permissions).selectinload(Permission.resource_type)
+        )
     return query.offset(skip).limit(limit).all()
 
 
@@ -36,8 +47,8 @@ def create_role(db: Session, *, role_in: RoleCreate) -> Role:
 def update_role(db: Session, *, db_obj: Role, obj_in: RoleUpdate) -> Role:
     update_data = obj_in.dict(exclude_unset=True)
 
-    if 'name' in update_data and update_data['name'] != db_obj.name:
-        if get_role_by_name(db, name=update_data['name']):
+    if "name" in update_data and update_data["name"] != db_obj.name:
+        if get_role_by_name(db, name=update_data["name"]):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="The role with this name already exists in the system.",
@@ -60,7 +71,9 @@ def delete_role(db: Session, *, role_id: int) -> Optional[Role]:
     return role
 
 
-def assign_permission_to_role(db: Session, *, role: Role, permission: Permission) -> Role:
+def assign_permission_to_role(
+    db: Session, *, role: Role, permission: Permission
+) -> Role:
     if permission in role.permissions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -72,7 +85,9 @@ def assign_permission_to_role(db: Session, *, role: Role, permission: Permission
     return role
 
 
-def remove_permission_from_role(db: Session, *, role: Role, permission: Permission) -> Role:
+def remove_permission_from_role(
+    db: Session, *, role: Role, permission: Permission
+) -> Role:
     if permission not in role.permissions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
