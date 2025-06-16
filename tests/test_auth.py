@@ -12,8 +12,6 @@ def test_register_user(client: TestClient):
     }
     
     response = client.post("/api/v1/auth/register", json=user_data)
-    print(f"Status: {response.status_code}")
-    print(f"Response: {response.text}")
     assert response.status_code == 200
     data = response.json()
     assert data["email"] == user_data["email"]
