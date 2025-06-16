@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+@pytest.mark.integration  
 def test_register_user(client: TestClient):
     """Test user registration."""
     user_data = {
@@ -21,6 +22,7 @@ def test_register_user(client: TestClient):
     assert "hashed_password" not in data  # Should not return password
 
 
+@pytest.mark.integration
 def test_login_user(client: TestClient):
     """Test user login."""
     # First register a user
@@ -48,6 +50,7 @@ def test_login_user(client: TestClient):
     assert data["token_type"] == "bearer"
 
 
+@pytest.mark.integration
 def test_login_with_wrong_password(client: TestClient):
     """Test login with wrong password."""
     # First register a user
@@ -73,6 +76,7 @@ def test_login_with_wrong_password(client: TestClient):
     assert data["detail"] == "Incorrect username or password"
 
 
+@pytest.mark.integration
 def test_login_nonexistent_user(client: TestClient):
     """Test login with nonexistent user."""
     login_data = {
@@ -86,6 +90,7 @@ def test_login_nonexistent_user(client: TestClient):
     assert data["detail"] == "Incorrect username or password"
 
 
+@pytest.mark.integration
 def test_password_reset_request(client: TestClient):
     """Test password reset request."""
     # First register a user
