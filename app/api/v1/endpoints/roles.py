@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app import crud
@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 # Role endpoints
-@router.get("/", response_model=List[RoleWithPermissions])
+@router.get("/")
 def read_roles(
         db: Session = Depends(deps.get_db),
         skip: int = 0,
@@ -22,7 +22,13 @@ def read_roles(
     Retrieve roles with optional permissions.
     """
     roles = crud.role.get_roles(db, skip=skip, limit=limit, include_permissions=include_permissions)
-    return roles
+    
+    if include_permissions:
+        # Return roles with permissions
+        return [RoleWithPermissions.model_validate(role) for role in roles]
+    else:
+        # Return roles without permissions
+        return [RoleSchema.model_validate(role) for role in roles]
 
 
 @router.get("/{role_id}", response_model=RoleWithPermissions)

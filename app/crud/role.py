@@ -10,13 +10,13 @@ def get_role_by_name(db: Session, name: str) -> Optional[Role]:
 
 
 def get_role(db: Session, role_id: int) -> Optional[Role]:
-    return db.query(Role).options(selectinload(Role.permissions)).filter(Role.id == role_id).first()
+    return db.query(Role).options(selectinload(Role.permissions).selectinload(Permission.resource_type)).filter(Role.id == role_id).first()
 
 
 def get_roles(db: Session, skip: int = 0, limit: int = 100, include_permissions: bool = True) -> List[Role]:
     query = db.query(Role)
     if include_permissions:
-        query = query.options(selectinload(Role.permissions))
+        query = query.options(selectinload(Role.permissions).selectinload(Permission.resource_type))
     return query.offset(skip).limit(limit).all()
 
 
