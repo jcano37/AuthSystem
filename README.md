@@ -518,6 +518,29 @@ REDIS_MAXMEMORY_POLICY=allkeys-lru
 - **v1.0.0**: Initial release with core authentication
 - **Current**: Enhanced RBAC and session management
 
+## Pre-commit Hooks
+
+### Setup
+
+1. Install pre-commit:
+```bash
+pip install pre-commit
+```
+
+2. Install the pre-commit hooks:
+```bash
+pre-commit install
+```
+
+The pre-commit hook will run code quality checks before each commit. If the checks fail, the commit will be aborted.
+
+### Manual Checks
+
+You can also run the checks manually:
+```bash
+./format_and_check.ps1
+```
+
 ---
 
 **Built with ❤️ using FastAPI and modern Python practices**

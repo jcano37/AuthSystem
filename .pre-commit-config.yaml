@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: code-quality-check
+        name: Run code quality checks
+        entry: ./format_and_check.ps1
+        language: system
+        pass_filenames: false
+        always_run: true 
