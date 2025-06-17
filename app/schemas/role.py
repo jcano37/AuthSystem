@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-# from app.schemas.permission import Permission
+from app.schemas.permission import Permission
 
 
 # Role schemas
