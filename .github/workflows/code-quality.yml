@@ -35,4 +35,4 @@ jobs:
         
     - name: Run code quality checks
       shell: pwsh
-      run: ./format_and_check.ps1 --check-only --verbose
+      run: ./format_and_check.ps1 --verbose
