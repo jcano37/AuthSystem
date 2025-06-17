@@ -219,9 +219,9 @@ if ($hasErrors) {
     Write-ColorOutput "   • Use '--fix' to automatically correct formatting issues" $Yellow
     Write-ColorOutput "   • Manually review flake8 and mypy errors" $Yellow
     Write-ColorOutput "   • Use '--verbose' for more details" $Yellow
-    return $false
+    exit 1
 } else {
     Write-ColorOutput "🎉 All code is clean and well-formatted!" $Green
     Write-ColorOutput "✨ Your project meets code quality standards" $Green
-    return $true
+    exit 0
 }
