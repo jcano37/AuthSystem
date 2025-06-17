@@ -2,11 +2,19 @@
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location (Join-Path $scriptDir "..")
 
-# Run the format and check script
-& .\format_and_check.ps1
+# Run the format and check script with verbose output
+$ErrorActionPreference = 'Stop'
+try {
+    & .\format_and_check.ps1 --verbose
+    $formatCheckExitCode = $LASTEXITCODE
+}
+catch {
+    Write-Host "Format and check script encountered an error."
+    $formatCheckExitCode = 1
+}
 
 # Check the exit code
-if ($LASTEXITCODE -ne 0) {
+if ($formatCheckExitCode -ne 0) {
     Write-Host "Format and check failed. Push aborted."
     exit 1
 }
