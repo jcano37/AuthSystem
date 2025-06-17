@@ -4,15 +4,16 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Auth System"
-    VERSION: str = "1.0.0"
-    API_V1_STR: str = "/api/v1"
+    # Application
+    PROJECT_NAME: str
+    VERSION: str
+    API_V1_STR: str
 
     # Database
-    POSTGRES_SERVER: str = "db"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "auth_db"
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
     @property
@@ -24,20 +25,20 @@ class Settings(BaseSettings):
         self.SQLALCHEMY_DATABASE_URI = self.get_database_url
 
     # JWT
-    SECRET_KEY: str = "your-secret-key-here"  # Change this in production
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int = 1
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_DAYS: int
+    PASSWORD_RESET_TOKEN_EXPIRE_HOURS: int
 
     # Redis
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
-    REDIS_DB: int = 0
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
     REDIS_PASSWORD: Optional[str] = None
 
     # Email
-    SMTP_TLS: bool = True
+    SMTP_TLS: bool
     SMTP_PORT: Optional[int] = None
     SMTP_HOST: Optional[str] = None
     SMTP_USER: Optional[str] = None
@@ -46,26 +47,27 @@ class Settings(BaseSettings):
     EMAILS_FROM_NAME: Optional[str] = None
 
     # CORS
-    BACKEND_CORS_ORIGINS: list = ["*"]
+    BACKEND_CORS_ORIGINS: list
 
     # Rate Limiting
-    RATE_LIMIT_PER_MINUTE: int = 60
+    RATE_LIMIT_PER_MINUTE: int
 
     # Password Policy
-    MIN_PASSWORD_LENGTH: int = 8
-    REQUIRE_SPECIAL_CHAR: bool = True
-    REQUIRE_NUMBER: bool = True
-    REQUIRE_UPPERCASE: bool = True
+    MIN_PASSWORD_LENGTH: int
+    REQUIRE_SPECIAL_CHAR: bool
+    REQUIRE_NUMBER: bool
+    REQUIRE_UPPERCASE: bool
 
     # Session
-    SESSION_EXPIRE_DAYS: int = 30
+    SESSION_EXPIRE_DAYS: int
 
     # 2FA
-    ENABLE_2FA: bool = False
+    ENABLE_2FA: bool
 
     class Config:
         case_sensitive = True
         env_file = ".env"
+        extra = 'ignore'  # Allow extra fields without raising validation errors
 
 
 settings = Settings()
