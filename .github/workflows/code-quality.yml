@@ -3,8 +3,8 @@ name: Backend Code Quality Check
 on:
   push:
     branches: [ develop, qa, main ]
-  pull_request:
-    branches: [ develop, qa, main ]
+  # pull_request:
+  #   branches: [ develop, qa, main ]
 
 jobs:
   code-quality:
