@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -84,58 +84,3 @@ class ActiveUsersStats(BaseModel):
     total_active_sessions: int
     total_users: int
     new_users_7d: int
-
-
-# Role schemas
-class RoleBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-
-class RoleCreate(RoleBase):
-    pass
-
-
-class RoleUpdate(RoleBase):
-    pass
-
-
-class Role(RoleBase):
-    id: int
-    created_at: datetime
-    is_default: Optional[bool] = False
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
-# Permission schemas
-class PermissionBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    resource_type_id: int
-    action: str
-
-
-class PermissionCreate(PermissionBase):
-    pass
-
-
-class PermissionUpdate(PermissionBase):
-    pass
-
-
-class Permission(PermissionBase):
-    id: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    resource: Optional[str] = None  # This will be populated from resource_type.name
-
-    class Config:
-        from_attributes = True
-
-
-# Role with permissions schema
-class RoleWithPermissions(Role):
-    permissions: List[Permission] = []

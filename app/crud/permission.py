@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.permissions import Permission
-from app.schemas.user import PermissionCreate, PermissionUpdate
+from app.schemas.permission import PermissionCreate, PermissionUpdate
 
 
 def get_permission_by_name(db: Session, name: str) -> Optional[Permission]:

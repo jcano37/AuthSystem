@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.api import deps
 from app.models.permissions import Permission
-from app.schemas.user import Permission as PermissionSchema
-from app.schemas.user import PermissionCreate, PermissionUpdate
+from app.schemas.permission import Permission as PermissionSchema
+from app.schemas.permission import PermissionCreate, PermissionUpdate
 
 router = APIRouter()
 

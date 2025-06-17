@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.permissions import Permission
 from app.models.roles import Role
-from app.schemas.user import RoleCreate, RoleUpdate
+from app.schemas.role import RoleCreate, RoleUpdate
 
 
 def get_role_by_name(db: Session, name: str) -> Optional[Role]:
