@@ -3,7 +3,11 @@ repos:
     hooks:
       - id: code-quality-check
         name: Run code quality checks
-        entry: ./format_and_check.ps1
+        entry: pwsh
+        args: 
+          - -Command
+          - if (!(./format_and_check.ps1)) { exit 1 }
         language: system
         pass_filenames: false
-        always_run: true 
+        always_run: true
+        stages: [commit] 
