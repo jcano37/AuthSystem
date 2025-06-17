@@ -1,203 +1,523 @@
-# Authentication System
+# 🔐 Authentication & Authorization System
 
-A robust authentication and authorization service built with FastAPI, supporting JWT and OAuth2 Password Flow. This system provides a solid foundation for managing users, roles, and permissions in modern applications.
+A modern, robust authentication and authorization service built with FastAPI, featuring comprehensive user management, role-based access control (RBAC), session management, and enterprise-grade security features.
 
-## Main Features
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-green.svg)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue.svg)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7+-red.svg)](https://redis.io/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- User authentication with JWT tokens
-- Role-based access control (RBAC)
-- Session management with Redis
-- Password encryption with bcrypt
-- Email verification
-- Password reset functionality
-- Request rate limiting
-- Docker support
-- Database migrations with Alembic
-- Data validation with Pydantic
-- Complete test suite
+## 🚀 Features
 
-## Prerequisites
+### Core Authentication
+- **JWT Authentication**: Secure access and refresh token system
+- **OAuth2 Password Flow**: Industry-standard authentication flow
+- **Session Management**: Redis-based session tracking with device info
+- **Token Blacklisting**: Secure logout with token invalidation
+- **Password Security**: bcrypt hashing with configurable policies
 
-- Docker and Docker Compose
-- Python 3.11+
-- PostgreSQL 16+
-- Redis 7+
+### User Management
+- **User Registration & Verification**: Email verification workflow
+- **Profile Management**: Comprehensive user profile system
+- **Password Reset**: Secure password reset with time-limited tokens
+- **Account Status**: Active/inactive user management
+- **Two-Factor Authentication**: 2FA support (configurable)
 
-## Main Dependencies
+### Authorization & Access Control
+- **Role-Based Access Control (RBAC)**: Flexible role and permission system
+- **Resource-Based Permissions**: Fine-grained access control
+- **Permission Inheritance**: Hierarchical permission structure
+- **Dynamic Role Assignment**: Runtime role management
 
-- FastAPI 0.109.2
-- Uvicorn 0.27.1
-- SQLAlchemy 2.0.27
-- Pydantic 2.6.1
-- Python-Jose 3.3.0
-- Passlib 1.7.4
-- Redis 5.0.1
-- Alembic 1.13.1
-- Pytest 8.0.0
+### Security Features
+- **Rate Limiting**: Configurable request rate limiting
+- **CORS Protection**: Cross-origin resource sharing controls
+- **Input Validation**: Comprehensive data validation with Pydantic
+- **SQL Injection Protection**: SQLAlchemy ORM security
+- **Password Policies**: Configurable complexity requirements
 
-## Quick Start
+### Developer Experience
+- **API Documentation**: Auto-generated OpenAPI/Swagger docs
+- **Database Migrations**: Alembic-powered schema management
+- **Comprehensive Testing**: Unit and integration test suite
+- **Code Quality**: Automated formatting and linting
+- **Docker Support**: Complete containerization
+- **Development Tools**: PowerShell scripts for workflow automation
 
-1. Clone the repository:
+## 🏗️ Architecture
+
+### Technology Stack
+- **Framework**: FastAPI 0.115.0
+- **Database**: PostgreSQL 16+ with SQLAlchemy 2.0.27
+- **Cache**: Redis 7+ for sessions and rate limiting
+- **Authentication**: JWT with python-jose
+- **Password Security**: bcrypt via passlib
+- **Validation**: Pydantic 2.6.1 for data validation
+- **Migrations**: Alembic 1.13.1
+- **Testing**: pytest 8.0.0 with coverage
+- **ASGI Server**: Uvicorn 0.27.1
+
+### Database Schema
+
+The system uses a sophisticated database schema with the following key entities:
+
+- **Users**: Core user information with authentication data
+- **Roles**: Named permission groups (admin, user, moderator, etc.)
+- **Permissions**: Fine-grained access rights tied to resources and actions
+- **ResourceTypes**: Categorization for permission targets
+- **Sessions**: Active user sessions with device tracking
+- **Password Reset Tokens**: Secure password reset mechanism
+- **Email Verification Tokens**: Account verification system
+
+## 📋 Prerequisites
+
+- **Python**: 3.11 or higher
+- **Docker**: Latest version with Docker Compose
+- **PostgreSQL**: 16+ (if running locally)
+- **Redis**: 7+ (if running locally)
+
+## 🚀 Quick Start
+
+### 1. Clone and Setup
+
 ```bash
 git clone <repository-url>
-cd auth-service
+cd auth-backend
 ```
 
-2. Create a `.env` file in the root directory:
+### 2. Environment Configuration
+
+Create a `.env` file in the project root:
+
 ```env
-# Database
-DATABASE_URL=postgresql://postgres:postgres@db:5432/auth_db
+# Database Configuration
+POSTGRES_SERVER=db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your-secure-password
+POSTGRES_DB=auth_db
 
-# Redis
-REDIS_URL=redis://redis:6379/0
+# Redis Configuration
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=
 
-# Security
-SECRET_KEY=your-secret-key-here
+# JWT Security
+SECRET_KEY=your-super-secure-secret-key-change-in-production
 ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=15
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
+PASSWORD_RESET_TOKEN_EXPIRE_HOURS=1
 
-# Email (optional)
-SMTP_TLS=True
+# Email Configuration (Optional)
+SMTP_TLS=true
 SMTP_PORT=587
 SMTP_HOST=smtp.gmail.com
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-application-password
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-app-password
+EMAILS_FROM_EMAIL=noreply@yourapp.com
+EMAILS_FROM_NAME=YourApp
+
+# Security Settings
+RATE_LIMIT_PER_MINUTE=60
+MIN_PASSWORD_LENGTH=8
+REQUIRE_SPECIAL_CHAR=true
+REQUIRE_NUMBER=true
+REQUIRE_UPPERCASE=true
+
+# Features
+ENABLE_2FA=false
 ```
 
-3. Build and start the containers:
-```bash
-docker-compose up --build
-```
+### 3. Docker Deployment
 
-4. Run the database migrations:
 ```bash
+# Build and start all services
+docker-compose up --build -d
+
+# Run database migrations
 docker-compose exec app alembic upgrade head
+
+# Verify the setup
+curl http://localhost:8000/
 ```
 
-The service will be available at `http://localhost:8000`
+The API will be available at:
+- **API Base**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-## API Documentation
+## 📚 API Documentation
 
-Once the service is running, you can access:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+### Authentication Endpoints
 
-## API Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/v1/auth/login` | User login with credentials |
+| `POST` | `/api/v1/auth/register` | New user registration |
+| `POST` | `/api/v1/auth/refresh` | Refresh access token |
+| `POST` | `/api/v1/auth/logout` | Logout and invalidate session |
+| `POST` | `/api/v1/auth/password-reset-request` | Request password reset |
+| `POST` | `/api/v1/auth/password-reset` | Confirm password reset |
 
-### Authentication
-- `POST /api/v1/auth/login` - Login with user/email and password
-- `POST /api/v1/auth/register` - Register a new user
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `POST /api/v1/auth/logout` - Logout and invalidate session
-- `POST /api/v1/auth/verify-email` - Verify email
-- `POST /api/v1/auth/reset-password` - Request password reset
-- `POST /api/v1/auth/reset-password-confirm` - Confirm password reset
+### User Management
 
-### Users
-- `GET /api/v1/users/me` - Get current user
-- `PUT /api/v1/users/me` - Update current user
-- `GET /api/v1/users/{user_id}` - Get user by ID
-- `GET /api/v1/users/` - List users (admins only)
-- `POST /api/v1/users/` - Create user (admins only)
-- `PUT /api/v1/users/{user_id}` - Update user (admins only)
-- `DELETE /api/v1/users/{user_id}` - Delete user (admins only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/users/me` | Get current user profile |
+| `PUT` | `/api/v1/users/me` | Update current user profile |
+| `GET` | `/api/v1/users/{user_id}` | Get user by ID (admin) |
+| `GET` | `/api/v1/users/` | List all users (admin) |
+| `POST` | `/api/v1/users/` | Create new user (admin) |
+| `PUT` | `/api/v1/users/{user_id}` | Update user (admin) |
+| `DELETE` | `/api/v1/users/{user_id}` | Delete user (admin) |
 
-### Roles and Permissions
-- `GET /api/v1/roles/` - List roles
-- `POST /api/v1/roles/` - Create role
-- `PUT /api/v1/roles/{role_id}` - Update role
-- `DELETE /api/v1/roles/{role_id}` - Delete role
-- `GET /api/v1/roles/permissions` - List permissions
-- `POST /api/v1/roles/permissions` - Create permission
-- `PUT /api/v1/roles/permissions/{permission_id}` - Update permission
-- `DELETE /api/v1/roles/permissions/{permission_id}` - Delete permission
+### Session Management
 
-## Project Structure
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/users/me/sessions` | List user's active sessions |
+| `DELETE` | `/api/v1/users/me/sessions/{session_id}` | Revoke specific session |
+| `DELETE` | `/api/v1/users/me/sessions` | Revoke all sessions |
+
+### Roles & Permissions
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/roles/` | List all roles |
+| `POST` | `/api/v1/roles/` | Create new role |
+| `PUT` | `/api/v1/roles/{role_id}` | Update role |
+| `DELETE` | `/api/v1/roles/{role_id}` | Delete role |
+| `GET` | `/api/v1/permissions/` | List all permissions |
+| `POST` | `/api/v1/permissions/` | Create permission |
+| `PUT` | `/api/v1/permissions/{permission_id}` | Update permission |
+| `DELETE` | `/api/v1/permissions/{permission_id}` | Delete permission |
+
+### Resource Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/resources/` | List resource types |
+| `POST` | `/api/v1/resources/` | Create resource type |
+| `PUT` | `/api/v1/resources/{resource_id}` | Update resource type |
+| `DELETE` | `/api/v1/resources/{resource_id}` | Delete resource type |
+
+## 🏗️ Project Structure
 
 ```
-auth-service/
-├── alembic/              # Database migrations
-├── app/
-│   ├── api/             # API Endpoints
-│   │   ├── v1/         # API Version 1
-│   │   └── deps.py     # API Dependencies
-│   ├── core/           # Configuration and utilities
-│   │   ├── config.py   # Application configuration
-│   │   └── security.py # Security functions
-│   ├── db/             # Database configuration
-│   ├── models/         # SQLAlchemy models
-│   └── schemas/        # Pydantic schemas
-├── tests/              # Unit and integration tests
-├── .env               # Environment variables
-├── docker-compose.yml # Docker configuration
-├── Dockerfile        # Docker build file
-└── requirements.txt  # Python dependencies
+auth-backend/
+├── alembic/                      # Database migrations
+│   ├── versions/                 # Migration files
+│   │   ├── initial_migration.py
+│   │   ├── roles_permissions_migration.py
+│   │   └── insert_basic_roles_permissions.py
+│   ├── env.py                    # Alembic environment
+│   └── migration_utils.py        # Migration utilities
+├── app/                          # Main application
+│   ├── api/                      # API layer
+│   │   ├── deps.py              # Dependencies
+│   │   └── v1/endpoints/        # API endpoints
+│   │       ├── auth.py          # Authentication
+│   │       ├── users.py         # User management
+│   │       ├── sessions.py      # Session management
+│   │       ├── roles.py         # Role management
+│   │       ├── permissions.py   # Permission management
+│   │       └── resources.py     # Resource management
+│   ├── core/                     # Core utilities
+│   │   ├── config.py            # Configuration
+│   │   ├── security.py          # Security functions
+│   │   └── redis.py             # Redis utilities
+│   ├── crud/                     # Database operations
+│   │   ├── user.py              # User CRUD
+│   │   ├── role.py              # Role CRUD
+│   │   ├── permission.py        # Permission CRUD
+│   │   ├── session.py           # Session CRUD
+│   │   └── resource.py          # Resource CRUD
+│   ├── db/                       # Database setup
+│   │   ├── base.py              # Database base
+│   │   ├── base_class.py        # SQLAlchemy base
+│   │   └── session.py           # Database session
+│   ├── models/                   # SQLAlchemy models
+│   │   ├── user.py              # User models
+│   │   ├── resource.py          # Resource models
+│   │   └── sessions.py          # Session models
+│   ├── schemas/                  # Pydantic schemas
+│   │   ├── user.py              # User schemas
+│   │   ├── resource.py          # Resource schemas
+│   │   └── session.py           # Session schemas
+│   └── main.py                   # Application entry point
+├── tests/                        # Test suite
+│   ├── conftest.py              # Test configuration
+│   ├── test_auth.py             # Authentication tests
+│   └── test_main.py             # Main application tests
+├── cURL/                         # API testing collection
+│   └── Auth System.postman_collection.json
+├── docs/                         # Documentation
+│   └── CODE_QUALITY.md          # Code quality guidelines
+├── docker-compose.yml            # Docker orchestration
+├── Dockerfile                    # Docker image definition
+├── requirements.txt              # Production dependencies
+├── requirements-dev.txt          # Development dependencies
+├── pyproject.toml               # Python project configuration
+├── alembic.ini                  # Alembic configuration
+├── format_and_check.ps1         # Code quality automation
+├── quick_format.ps1             # Quick formatting script
+└── reset-and-rebuild.ps1        # Environment reset script
 ```
 
-## Development and Testing
+## 🧪 Development
 
-### Run Tests
+### Local Development Setup
+
+1. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+2. **Start services locally**:
+```bash
+# Start PostgreSQL and Redis
+docker-compose up db redis -d
+
+# Set environment variables for local development
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/auth_db"
+export REDIS_URL="redis://localhost:6379/0"
+
+# Run migrations
+alembic upgrade head
+
+# Start the application
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Testing
+
 ```bash
 # Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html --cov-report=term-missing
+
+# Run specific test file
+pytest tests/test_auth.py
+
+# Run tests in Docker
 docker-compose exec app pytest
-
-# Run tests with coverage
-docker-compose exec app pytest --cov=app tests/
-
-# Run specific tests
-docker-compose exec app pytest tests/test_auth.py
 ```
 
-### Database Migrations
+### Code Quality
+
+The project includes automated code quality tools:
+
 ```bash
-# Create a new migration
-docker-compose exec app alembic revision --autogenerate -m "description"
+# Format code and run checks (Windows)
+.\format_and_check.ps1
+
+# Quick format only
+.\quick_format.ps1
+
+# Manual tools
+python -m black app
+python -m isort app
+python -m flake8 app
+python -m mypy app
+```
+
+### Database Operations
+
+```bash
+# Create new migration
+alembic revision --autogenerate -m "Description of changes"
 
 # Apply migrations
-docker-compose exec app alembic upgrade head
+alembic upgrade head
 
-# Revert migrations
-docker-compose exec app alembic downgrade -1
+# Revert last migration
+alembic downgrade -1
+
+# Reset database (development only)
+.\reset-and-rebuild.ps1
 ```
 
-## Security Features
+## 🔒 Security Considerations
 
-- Password encryption with bcrypt
-- JWT-based token authentication
-- Token blacklist for logout
-- Rate limiting to prevent brute-force attacks
-- Role-based access control
-- Session management with Redis
-- Secure password reset flow
-- Email verification
-- Security headers (CORS, CSP, etc.)
-- Data validation with Pydantic
+### Production Deployment
 
-## Contributing
+1. **Environment Security**:
+   - Use strong, unique `SECRET_KEY`
+   - Configure proper database credentials
+   - Enable HTTPS/TLS
+   - Set restrictive CORS origins
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Make your changes
-4. Make sure the tests pass (`pytest`)
-5. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-6. Push to the branch (`git push origin feature/AmazingFeature`)
-7. Open a Pull Request
+2. **Database Security**:
+   - Use connection pooling
+   - Enable SSL connections
+   - Regular backups
+   - Restrict network access
 
-## License
+3. **Redis Security**:
+   - Configure password authentication
+   - Use SSL/TLS connections
+   - Restrict network access
+   - Set appropriate timeout values
 
-This project is licensed under the MIT License - see the LICENSE file for more details.
+4. **Application Security**:
+   - Enable rate limiting
+   - Configure strong password policies
+   - Implement proper logging
+   - Monitor authentication attempts
 
-## Support
+### Password Policy
 
-If you encounter any issues or have suggestions, please:
-1. Review the documentation
-2. Search existing issues
-3. Create a new issue if necessary
+The system supports configurable password policies:
 
-## Acknowledgements
+```env
+MIN_PASSWORD_LENGTH=8          # Minimum password length
+REQUIRE_SPECIAL_CHAR=true      # Require special characters
+REQUIRE_NUMBER=true            # Require numbers
+REQUIRE_UPPERCASE=true         # Require uppercase letters
+```
 
-- FastAPI for the excellent framework
-- SQLAlchemy for the ORM
-- Pydantic for data validation
-- The open-source community
+### Rate Limiting
+
+Built-in rate limiting protects against brute force attacks:
+
+```env
+RATE_LIMIT_PER_MINUTE=60      # Requests per minute per IP
+```
+
+## 📊 Monitoring & Observability
+
+### Health Checks
+
+The application includes health check endpoints:
+
+- **Application Health**: `GET /`
+- **Database Health**: Built into Docker Compose
+- **Redis Health**: Built into Docker Compose
+
+### Logging
+
+The application uses structured logging with different levels:
+
+- **INFO**: Normal operations
+- **WARNING**: Unusual but handled situations
+- **ERROR**: Error conditions
+- **DEBUG**: Detailed debugging information (development only)
+
+## 🤝 Contributing
+
+### Development Workflow
+
+1. **Fork the repository**
+2. **Create a feature branch**:
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Make your changes**
+4. **Run tests and quality checks**:
+   ```bash
+   .\format_and_check.ps1
+   pytest
+   ```
+5. **Commit your changes**:
+   ```bash
+   git commit -m "Add: Amazing feature description"
+   ```
+6. **Push to your branch**:
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+7. **Open a Pull Request**
+
+### Code Standards
+
+- **Python Style**: PEP 8 compliance via Black
+- **Import Sorting**: isort configuration
+- **Type Hints**: Comprehensive type annotations
+- **Documentation**: Docstrings for all public functions
+- **Testing**: Unit tests for all new functionality
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### Getting Help
+
+1. **Documentation**: Check this README and API docs
+2. **Issues**: Search existing GitHub issues
+3. **Discussions**: Start a GitHub discussion
+4. **Security**: Email security issues privately
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Database Connection**:
+   - Verify PostgreSQL is running
+   - Check connection string
+   - Ensure database exists
+
+2. **Redis Connection**:
+   - Verify Redis is running
+   - Check Redis URL configuration
+   - Test Redis connectivity
+
+3. **JWT Errors**:
+   - Verify SECRET_KEY is set
+   - Check token expiration settings
+   - Ensure algorithm matches
+
+4. **Migration Issues**:
+   - Check Alembic configuration
+   - Verify database permissions
+   - Review migration files
+
+### Performance Tuning
+
+#### Database Optimization
+
+```env
+# Connection pool settings (in alembic.ini)
+sqlalchemy.pool_size=10
+sqlalchemy.max_overflow=20
+sqlalchemy.pool_timeout=30
+sqlalchemy.pool_recycle=3600
+```
+
+#### Redis Optimization
+
+```env
+# Redis memory and persistence settings
+REDIS_MAXMEMORY=256mb
+REDIS_MAXMEMORY_POLICY=allkeys-lru
+```
+
+## 📈 Roadmap
+
+### Planned Features
+
+- [ ] Advanced audit logging
+- [ ] Multi-tenancy support
+- [ ] Advanced 2FA methods (TOTP, WebAuthn)
+- [ ] OAuth2 provider support
+- [ ] Advanced session analytics
+- [ ] Webhook notifications
+- [ ] Admin dashboard
+- [ ] API rate limiting per user
+- [ ] Advanced password policies
+- [ ] SSO integration
+
+### Version History
+
+- **v1.0.0**: Initial release with core authentication
+- **Current**: Enhanced RBAC and session management
+
+---
+
+**Built with ❤️ using FastAPI and modern Python practices**
