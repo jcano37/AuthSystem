@@ -1,16 +1,16 @@
 #!/usr/bin/env pwsh
-# Script de PowerShell para formatear y verificar código Python
-# Autor: Asistente IA
-# Uso: .\format_and_check.ps1 [--check-only] [--fix] [--verbose]
+# PowerShell script to format and check Python code
+# Author: Jerry Cano
+# Usage: .\format_and_check.ps1 [--check-only] [--fix] [--verbose]
 
 param(
-    [switch]$CheckOnly,      # Solo verificar, no formatear
-    [switch]$Fix,            # Formatear y arreglar problemas automáticamente  
-    [switch]$Verbose,        # Salida detallada
-    [switch]$Help            # Mostrar ayuda
+    [switch]$CheckOnly,      # Only check, do not format
+    [switch]$Fix,            # Format and fix issues automatically
+    [switch]$Verbose,        # Verbose output
+    [switch]$Help            # Show help
 )
 
-# Colores para output
+# Colors for output
 $Green = "Green"
 $Red = "Red"
 $Yellow = "Yellow"
@@ -26,28 +26,28 @@ function Write-ColorOutput {
 }
 
 function Show-Help {
-    Write-ColorOutput "=== SCRIPT DE FORMATEO Y VERIFICACIÓN DE CÓDIGO PYTHON ===" $Blue
+    Write-ColorOutput "=== PYTHON CODE FORMATTING AND CHECKING SCRIPT ===" $Blue
     Write-ColorOutput ""
-    Write-ColorOutput "DESCRIPCIÓN:" $Yellow
-    Write-ColorOutput "  Este script automatiza el formateo y verificación de código Python usando:"
-    Write-ColorOutput "  • Black (formateo de código)"
-    Write-ColorOutput "  • isort (ordenamiento de imports)"
-    Write-ColorOutput "  • flake8 (linting y verificación de estilo)"
-    Write-ColorOutput "  • mypy (verificación de tipos)"
+    Write-ColorOutput "DESCRIPTION:" $Yellow
+    Write-ColorOutput "  This script automates formatting and checking of Python code using:"
+    Write-ColorOutput "  • Black (code formatting)"
+    Write-ColorOutput "  • isort (import sorting)"
+    Write-ColorOutput "  • flake8 (linting and style checking)"
+    Write-ColorOutput "  • mypy (type checking)"
     Write-ColorOutput ""
-    Write-ColorOutput "USO:" $Yellow
-    Write-ColorOutput "  .\format_and_check.ps1 [OPCIONES]"
+    Write-ColorOutput "USAGE:" $Yellow
+    Write-ColorOutput "  .\format_and_check.ps1 [OPTIONS]"
     Write-ColorOutput ""
-    Write-ColorOutput "OPCIONES:" $Yellow
-    Write-ColorOutput "  --check-only    Solo verificar código, no hacer cambios"
-    Write-ColorOutput "  --fix          Formatear y arreglar automáticamente"
-    Write-ColorOutput "  --verbose      Mostrar salida detallada"
-    Write-ColorOutput "  --help         Mostrar esta ayuda"
+    Write-ColorOutput "OPTIONS:" $Yellow
+    Write-ColorOutput "  --check-only    Only check code, do not make changes"
+    Write-ColorOutput "  --fix          Format and fix automatically"
+    Write-ColorOutput "  --verbose      Show verbose output"
+    Write-ColorOutput "  --help         Show this help message"
     Write-ColorOutput ""
-    Write-ColorOutput "EJEMPLOS:" $Yellow
-    Write-ColorOutput "  .\format_and_check.ps1                    # Verificar y formatear"
-    Write-ColorOutput "  .\format_and_check.ps1 --check-only       # Solo verificar"
-    Write-ColorOutput "  .\format_and_check.ps1 --fix --verbose    # Formatear con detalles"
+    Write-ColorOutput "EXAMPLES:" $Yellow
+    Write-ColorOutput "  .\format_and_check.ps1                    # Check and format"
+    Write-ColorOutput "  .\format_and_check.ps1 --check-only       # Only check"
+    Write-ColorOutput "  .\format_and_check.ps1 --fix --verbose    # Format with details"
     exit 0
 }
 
@@ -73,7 +73,7 @@ function Run-Command {
     Write-ColorOutput "🔄 $Description..." $Blue
     
     if ($Verbose) {
-        Write-ColorOutput "Ejecutando: $Command" $Magenta
+        Write-ColorOutput "Executing: $Command" $Magenta
     }
     
     try {
@@ -81,24 +81,24 @@ function Run-Command {
         $exitCode = $LASTEXITCODE
         
         if ($exitCode -eq 0) {
-            Write-ColorOutput "✅ $Description completado exitosamente" $Green
+            Write-ColorOutput "✅ $Description completed successfully" $Green
             if ($Verbose -and $result) {
                 Write-ColorOutput $result
             }
             return $true
         } else {
-            Write-ColorOutput "❌ $Description falló (código: $exitCode)" $Red
+            Write-ColorOutput "❌ $Description failed (code: $exitCode)" $Red
             if ($result) {
                 Write-ColorOutput $result $Red
             }
             if (-not $ContinueOnError) {
-                throw "El comando falló: $Command"
+                throw "The command failed: $Command"
             }
             return $false
         }
     }
     catch {
-        Write-ColorOutput "❌ Error ejecutando $Description`: $($_.Exception.Message)" $Red
+        Write-ColorOutput "❌ Error executing $Description`: $($_.Exception.Message)" $Red
         if (-not $ContinueOnError) {
             throw
         }
@@ -106,30 +106,34 @@ function Run-Command {
     }
 }
 
-# Mostrar ayuda si se solicita
+# Show help if requested
 if ($Help) {
     Show-Help
 }
 
-# Banner inicial
+# Initial banner
 Write-ColorOutput ""
 Write-ColorOutput "==========================================" $Blue
-Write-ColorOutput "  🐍 FORMATEO Y VERIFICACIÓN DE CÓDIGO  " $Blue  
+Write-ColorOutput "  🐍 CODE FORMATTING AND CHECKING  " $Blue  
 Write-ColorOutput "==========================================" $Blue
 Write-ColorOutput ""
 
-# Verificar que estamos en el directorio correcto
+# Verify that we are in the correct directory
 if (-not (Test-Path "app")) {
-    Write-ColorOutput "❌ Error: No se encontró el directorio 'app'. Ejecuta este script desde la raíz del proyecto." $Red
+    Write-ColorOutput "❌ Error: 'app' directory not found. Run this script from the project root." $Red
     exit 1
 }
 
-Write-ColorOutput "📁 Directorio del proyecto: $(Get-Location)" $Yellow
-Write-ColorOutput "⚙️  Modo: $(if ($CheckOnly) { 'Solo verificación' } elseif ($Fix) { 'Formateo automático' } else { 'Verificación y formateo' })" $Yellow
+Write-ColorOutput "📁 Project directory: $(Get-Location)" $Yellow
+Write-ColorOutput "⚙️  Mode: $(if ($CheckOnly) { 'Check only' } elseif ($Fix) { 'Auto-fix' } else { 'Check and format' })" $Yellow
+
+# Display Python path
+$pythonPath = (Get-Command python).Source
+Write-ColorOutput "🐍 Using Python at: $pythonPath" $Yellow
 Write-ColorOutput ""
 
-# Verificar herramientas instaladas
-Write-ColorOutput "🔍 Verificando herramientas instaladas..." $Yellow
+# Check installed tools
+Write-ColorOutput "🔍 Checking installed tools..." $Yellow
 
 $tools = @(
     @{Name = "black"; Command = "python -m black --version" },
@@ -141,68 +145,68 @@ $tools = @(
 $missingTools = @()
 foreach ($tool in $tools) {
     if (Test-Command "python") {
-        try {
-            $null = Invoke-Expression $tool.Command
-            Write-ColorOutput "  ✅ $($tool.Name) está instalado" $Green
+                Invoke-Expression $tool.Command 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-ColorOutput "  ✅ $($tool.Name) is installed" $Green
         }
-        catch {
-            Write-ColorOutput "  ❌ $($tool.Name) no está instalado" $Red
+        else {
+            Write-ColorOutput "  ❌ $($tool.Name) is not installed" $Red
             $missingTools += $tool.Name
         }
     } else {
-        Write-ColorOutput "❌ Python no está disponible en PATH" $Red
+        Write-ColorOutput "❌ Python is not available in PATH" $Red
         exit 1
     }
 }
 
 if ($missingTools.Count -gt 0) {
-    Write-ColorOutput "❌ Faltan herramientas: $($missingTools -join ', ')" $Red
-    Write-ColorOutput "💡 Instálalas con: python -m pip install $($missingTools -join ' ')" $Yellow
+    Write-ColorOutput "❌ Missing tools: $($missingTools -join ', ')" $Red
+    Write-ColorOutput "💡 Install them with: python -m pip install $($missingTools -join ' ')" $Yellow
     exit 1
 }
 
 Write-ColorOutput ""
 
-# Variables para el seguimiento de errores
+# Variables for error tracking
 $hasErrors = $false
 $results = @()
 
-# 1. isort - Ordenar imports
+# 1. isort - Sort imports
 if ($CheckOnly) {
-    $success = Run-Command "python -m isort --check-only --diff app" "Verificando ordenamiento de imports" -ContinueOnError
+    $success = Run-Command "python -m isort --check-only --diff app" "Checking import sorting" -ContinueOnError
 } else {
-    $success = Run-Command "python -m isort app" "Ordenando imports" -ContinueOnError
+    $success = Run-Command "python -m isort app" "Sorting imports" -ContinueOnError
 }
 $results += @{Tool = "isort"; Success = $success}
 if (-not $success) { $hasErrors = $true }
 
-# 2. Black - Formateo de código
+# 2. Black - Code formatting
 if ($CheckOnly) {
-    $success = Run-Command "python -m black --check --diff app" "Verificando formateo de código" -ContinueOnError
+    $success = Run-Command "python -m black --check --diff app" "Checking code formatting" -ContinueOnError
 } else {
-    $success = Run-Command "python -m black app" "Formateando código" -ContinueOnError
+    $success = Run-Command "python -m black app" "Formatting code" -ContinueOnError
 }
 $results += @{Tool = "black"; Success = $success}
 if (-not $success) { $hasErrors = $true }
 
 # 3. Flake8 - Linting
-$success = Run-Command "python -m flake8 app" "Ejecutando linting (flake8)" -ContinueOnError
+$success = Run-Command "python -m flake8 app" "Running linting (flake8)" -ContinueOnError
 $results += @{Tool = "flake8"; Success = $success}
 if (-not $success) { $hasErrors = $true }
 
-# 4. MyPy - Verificación de tipos
-$success = Run-Command "python -m mypy app" "Verificando tipos (mypy)" -ContinueOnError
+# 4. MyPy - Type checking
+$success = Run-Command "python -m mypy app" "Checking types (mypy)" -ContinueOnError
 $results += @{Tool = "mypy"; Success = $success}
 if (-not $success) { $hasErrors = $true }
 
-# Resumen final
+# Final summary
 Write-ColorOutput ""
 Write-ColorOutput "========================================" $Blue
-Write-ColorOutput "           📊 RESUMEN FINAL             " $Blue
+Write-ColorOutput "           📊 FINAL SUMMARY             " $Blue
 Write-ColorOutput "========================================" $Blue
 
 foreach ($result in $results) {
-    $status = if ($result.Success) { "✅ ÉXITO" } else { "❌ FALLÓ" }
+    $status = if ($result.Success) { "✅ SUCCESS" } else { "❌ FAILED" }
     $color = if ($result.Success) { $Green } else { $Red }
     Write-ColorOutput "  $($result.Tool.PadRight(10)) : $status" $color
 }
@@ -210,14 +214,14 @@ foreach ($result in $results) {
 Write-ColorOutput ""
 
 if ($hasErrors) {
-    Write-ColorOutput "❌ Se encontraron errores en el código. Revisa los mensajes anteriores." $Red
-    Write-ColorOutput "💡 Consejos:" $Yellow
-    Write-ColorOutput "   • Usa '--fix' para corregir automáticamente problemas de formato" $Yellow
-    Write-ColorOutput "   • Revisa manualmente los errores de flake8 y mypy" $Yellow
-    Write-ColorOutput "   • Usa '--verbose' para más detalles" $Yellow
+    Write-ColorOutput "❌ Errors were found in the code. Review the messages above." $Red
+    Write-ColorOutput "💡 Tips:" $Yellow
+    Write-ColorOutput "   • Use '--fix' to automatically correct formatting issues" $Yellow
+    Write-ColorOutput "   • Manually review flake8 and mypy errors" $Yellow
+    Write-ColorOutput "   • Use '--verbose' for more details" $Yellow
     exit 1
 } else {
-    Write-ColorOutput "🎉 ¡Todo el código está limpio y bien formateado!" $Green
-    Write-ColorOutput "✨ Tu proyecto cumple con los estándares de calidad de código" $Green
+    Write-ColorOutput "🎉 All code is clean and well-formatted!" $Green
+    Write-ColorOutput "✨ Your project meets code quality standards" $Green
     exit 0
-} 
+}

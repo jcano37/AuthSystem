@@ -1,136 +1,136 @@
-# 🐍 Guía de Calidad de Código - Auth Backend
+# 🐍 Code Quality Guide - Auth Backend
 
-Este proyecto utiliza herramientas automatizadas para mantener la calidad y consistencia del código Python.
+This project uses automated tools to maintain the quality and consistency of the Python code.
 
-## 🛠️ Herramientas Instaladas
+## 🛠️ Installed Tools
 
-- **Black** - Formateo automático de código
-- **isort** - Ordenamiento de imports
-- **flake8** - Linting y verificación de estilo
-- **mypy** - Verificación de tipos estáticos
+- **Black** - Automatic code formatting
+- **isort** - Import sorting
+- **flake8** - Linting and style checking
+- **mypy** - Static type checking
 
-## 📋 Scripts Disponibles
+## 📋 Available Scripts
 
-### 1. Script Principal: `format_and_check.ps1`
+### 1. Main Script: `format_and_check.ps1`
 
-Script completo con todas las verificaciones y opciones avanzadas.
+Complete script with all checks and advanced options.
 
 ```powershell
-# Formatear y verificar todo el código
+# Format and check all code
 .\format_and_check.ps1
 
-# Solo verificar (no hacer cambios)
+# Only check (do not make changes)
 .\format_and_check.ps1 --check-only
 
-# Formatear con salida detallada
+# Format with detailed output
 .\format_and_check.ps1 --verbose
 
-# Ver ayuda completa
+# View full help
 .\format_and_check.ps1 --help
 ```
 
-### 2. Script Rápido: `quick_format.ps1`
+### 2. Quick Script: `quick_format.ps1`
 
-Formateo rápido para uso diario.
+Quick formatting for daily use.
 
 ```powershell
-# Formateo rápido (isort + black)
+# Quick formatting (isort + black)
 .\quick_format.ps1
 ```
 
-## ⚙️ Configuración
+## ⚙️ Configuration
 
 ### pyproject.toml
-Configuración para **black**, **isort** y **mypy**:
-- Longitud de línea: 88 caracteres
-- Compatible con Python 3.11+
-- Excluye directorios específicos (alembic, cache, etc.)
+Configuration for **black**, **isort**, and **mypy**:
+- Line length: 88 characters
+- Compatible with Python 3.11+
+- Excludes specific directories (alembic, cache, etc.)
 
 ### setup.cfg  
-Configuración para **flake8**:
-- Longitud máxima: 88 caracteres
-- Complejidad máxima: 10
-- Ignora conflictos con black
+Configuration for **flake8**:
+- Maximum length: 88 characters
+- Maximum complexity: 10
+- Ignores conflicts with black
 
-## 🚀 Uso Recomendado
+## 🚀 Recommended Usage
 
-### Durante el Desarrollo
+### During Development
 ```powershell
-# Antes de cada commit
+# Before each commit
 .\quick_format.ps1
 ```
 
-### Antes de Push/PR
+### Before Push/PR
 ```powershell
-# Verificación completa
+# Full check
 .\format_and_check.ps1 --check-only
 ```
 
-### En CI/CD
+### In CI/CD
 ```powershell
-# Verificación sin cambios
+# Check without changes
 .\format_and_check.ps1 --check-only --verbose
 ```
 
-## 📖 Comandos Manuales
+## 📖 Manual Commands
 
-Si prefieres ejecutar las herramientas individualmente:
+If you prefer to run the tools individually:
 
 ```powershell
-# Ordenar imports
+# Sort imports
 python -m isort app
 
-# Formatear código  
+# Format code
 python -m black app
 
-# Verificar estilo
+# Check style
 python -m flake8 app
 
-# Verificar tipos
+# Check types
 python -m mypy app
 ```
 
-## 🔧 Solución de Problemas
+## 🔧 Troubleshooting
 
-### Error: "Herramienta no encontrada"
+### Error: "Tool not found"
 ```powershell
 python -m pip install black flake8 isort mypy
 ```
 
-### Error: "No se encontró directorio 'app'"
-Ejecuta los scripts desde la raíz del proyecto donde está la carpeta `app/`.
+### Error: "'app' directory not found"
+Run the scripts from the project root where the `app/` folder is located.
 
-### Errores de mypy
-- Revisa los tipos de las funciones
-- Agrega imports missing en `pyproject.toml`
-- Usa `# type: ignore` solo cuando sea necesario
+### MyPy Errors
+- Review function types
+- Add missing imports in `pyproject.toml`
+- Use `# type: ignore` only when necessary
 
-### Errores de flake8
-- La mayoría se solucionan con black e isort
-- Revisa manualmente errores de complejidad
-- Algunos pueden requerir refactoring
+### Flake8 Errors
+- Most are fixed by black and isort
+- Manually review complexity errors
+- Some may require refactoring
 
-## 📊 Interpretación de Resultados
+## 📊 Interpreting Results
 
-- ✅ **ÉXITO**: No hay problemas
-- ❌ **FALLÓ**: Se encontraron errores que requieren atención
+- ✅ **SUCCESS**: No issues
+- ❌ **FAILED**: Errors were found that require attention
 
-### Tipos de Errores Comunes
+### Common Error Types
 
-1. **Black/isort**: Se solucionan automáticamente al formatear
-2. **flake8**: Problemas de estilo que requieren revisión manual
-3. **mypy**: Problemas de tipos que requieren anotaciones
+1. **Black/isort**: Automatically fixed upon formatting
+2. **flake8**: Style issues that require manual review
+3. **mypy**: Type issues that require annotations
 
-## 🎯 Estándares del Proyecto
+## 🎯 Project Standards
 
-- **Longitud de línea**: 88 caracteres (estándar black)
-- **Imports**: Ordenados por isort (stdlib → terceros → locales)
-- **Tipos**: Anotaciones obligatorias en funciones públicas
-- **Complejidad**: Máximo 10 (McCabe)
+- **Line length**: 88 characters (black standard)
+- **Imports**: Sorted by isort (stdlib → third-party → local)
+- **Types**: Mandatory annotations in public functions
+- **Complexity**: Maximum 10 (McCabe)
 
-## 🔄 Integración con Git
+## 🔄 Git Integration
 
-Considera agregar un pre-commit hook:
+Consider adding a pre-commit hook:
 
 ```bash
 # .git/hooks/pre-commit
@@ -140,15 +140,15 @@ pwsh -File format_and_check.ps1 --check-only
 
 ## 💡 Tips
 
-1. **Ejecuta formateo frecuentemente** para evitar grandes cambios
-2. **Usa --verbose** cuando tengas errores difíciles de entender  
-3. **Revisa la configuración** en pyproject.toml si necesitas ajustes
-4. **Ignora errores específicos** solo cuando sea absolutamente necesario
+1. **Run formatting frequently** to avoid large changes
+2. **Use --verbose** when you have hard-to-understand errors
+3. **Review the configuration** in `pyproject.toml` if you need adjustments
+4. **Ignore specific errors** only when absolutely necessary
 
 ---
 
-Para más información sobre cada herramienta:
+For more information about each tool:
 - [Black Documentation](https://black.readthedocs.io/)
 - [isort Documentation](https://isort.readthedocs.io/)
 - [flake8 Documentation](https://flake8.pycqa.org/)
-- [mypy Documentation](https://mypy.readthedocs.io/) 
+- [mypy Documentation](https://mypy.readthedocs.io/)
