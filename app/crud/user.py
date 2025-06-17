@@ -1,5 +1,5 @@
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
@@ -95,7 +95,7 @@ def delete_user(db: Session, *, user_id: int) -> Optional[User]:
 
 def create_password_reset_token(db: Session, *, user: User) -> PasswordResetToken:
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.utcnow() + timedelta(
+    expires_at = datetime.now(timezone.utc) + timedelta(
         hours=settings.PASSWORD_RESET_TOKEN_EXPIRE_HOURS
     )
     db_token = PasswordResetToken(user_id=user.id, token=token, expires_at=expires_at)
@@ -121,7 +121,7 @@ def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Token has already been used",
         )
-    if token_obj.expires_at < datetime.utcnow():
+    if token_obj.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Token has expired"
         )

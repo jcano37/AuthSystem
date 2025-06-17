@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -25,7 +25,9 @@ class Settings(BaseSettings):
         self.SQLALCHEMY_DATABASE_URI = self.get_database_url
 
     # JWT
-    SECRET_KEY: str = "your-secret-key"  # Replace with a secure random key in production
+    SECRET_KEY: str = (
+        "your-secret-key"  # Replace with a secure random key in production
+    )
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -67,7 +69,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=".env",
-        extra="ignore"  # Allow extra fields without raising validation errors
+        extra="ignore",  # Allow extra fields without raising validation errors
     )
 
 

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, List
 
 from fastapi import APIRouter, Depends
@@ -55,9 +55,7 @@ def get_active_users_stats(
     total_users = db.query(User).filter(User.is_active == True).count()
 
     # Users registered in last 7 days
-    from datetime import datetime
-
-    last_7d = datetime.utcnow() - timedelta(days=7)
+    last_7d = datetime.now(timezone.utc) - timedelta(days=7)
     new_users_7d = db.query(User).filter(User.created_at >= last_7d).count()
 
     return {

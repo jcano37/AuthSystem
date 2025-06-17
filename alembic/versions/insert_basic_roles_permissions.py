@@ -8,7 +8,7 @@ Create Date: 2024-06-20 10:00:00.000000
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import table, column, select, text
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Import migration utilities
 import sys
@@ -59,7 +59,7 @@ resource_types_table = table('resource_types',
 
 def upgrade() -> None:
     connection = op.get_bind()
-    current_time = datetime.utcnow()
+    current_time = datetime.now(timezone.utc)
 
     # Insert basic resource types
     resource_types_data = [

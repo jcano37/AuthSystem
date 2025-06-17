@@ -1,25 +1,29 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.db.base_class import Base
-from app.models.roles import user_role
+from app.db.base_class import CustomBase as Base
+from app.models.sessions import Session
 
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    full_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
-    full_name = Column(String)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
+    )
     last_login = Column(DateTime, nullable=True)
 
     # 2FA fields
@@ -27,13 +31,9 @@ class User(Base):
     two_factor_secret = Column(String, nullable=True)
 
     # Relationships
-    roles = relationship("Role", secondary=user_role, back_populates="users")
-    sessions = relationship(
-        "Session", back_populates="user", cascade="all, delete-orphan"
-    )
-    password_reset_tokens = relationship(
-        "PasswordResetToken", back_populates="user", cascade="all, delete-orphan"
-    )
+    roles = relationship("Role", secondary="user_role", back_populates="users")
+    sessions = relationship(Session, back_populates="user")
+    password_reset_tokens = relationship("PasswordResetToken", back_populates="user")
     email_verification_tokens = relationship(
         "EmailVerificationToken", back_populates="user", cascade="all, delete-orphan"
     )
@@ -45,7 +45,7 @@ class PasswordResetToken(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     token = Column(String, unique=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=False)
     is_used = Column(Boolean, default=False)
 
@@ -59,7 +59,7 @@ class EmailVerificationToken(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     token = Column(String, unique=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=False)
     is_used = Column(Boolean, default=False)
 

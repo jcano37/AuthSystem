@@ -4,8 +4,8 @@ This module provides helper functions to perform migration operations
 more efficiently, especially for large operations.
 """
 
-from typing import List, Dict, Any, Optional, Union, Callable
-from sqlalchemy import Table, Column, MetaData, text
+from typing import List, Dict, Any, Optional, Callable
+from sqlalchemy import Table, text
 from sqlalchemy.engine import Connection
 import time
 import logging

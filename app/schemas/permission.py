@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # Permission schemas
@@ -26,5 +26,4 @@ class Permission(PermissionBase):
     updated_at: Optional[datetime] = None
     resource: Optional[str] = None  # This will be populated from resource_type.name
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

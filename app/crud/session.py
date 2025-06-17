@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from sqlalchemy import and_, func
@@ -15,7 +15,7 @@ def get_user_active_sessions(db: Session, user_id: int) -> List[UserSession]:
             and_(
                 UserSession.user_id == user_id,
                 UserSession.is_active == True,
-                UserSession.expires_at > datetime.utcnow(),
+                UserSession.expires_at > datetime.now(timezone.utc),
             )
         )
         .order_by(UserSession.created_at.desc())
@@ -58,7 +58,7 @@ def get_all_active_sessions(
         .filter(
             and_(
                 UserSession.is_active == True,
-                UserSession.expires_at > datetime.utcnow(),
+                UserSession.expires_at > datetime.now(timezone.utc),
             )
         )
         .order_by(UserSession.created_at.desc())
@@ -87,7 +87,7 @@ def revoke_session(db: Session, session: UserSession) -> None:
 def get_session_statistics(db: Session) -> dict:
     """Get session statistics for admin dashboard."""
     # Active sessions in last 24 hours
-    last_24h = datetime.utcnow() - timedelta(hours=24)
+    last_24h = datetime.now(timezone.utc) - timedelta(hours=24)
 
     active_sessions_24h = (
         db.query(UserSession)
@@ -95,7 +95,7 @@ def get_session_statistics(db: Session) -> dict:
             and_(
                 UserSession.is_active == True,
                 UserSession.created_at >= last_24h,
-                UserSession.expires_at > datetime.utcnow(),
+                UserSession.expires_at > datetime.now(timezone.utc),
             )
         )
         .count()
@@ -108,7 +108,7 @@ def get_session_statistics(db: Session) -> dict:
             and_(
                 UserSession.is_active == True,
                 UserSession.created_at >= last_24h,
-                UserSession.expires_at > datetime.utcnow(),
+                UserSession.expires_at > datetime.now(timezone.utc),
             )
         )
         .scalar()
@@ -120,7 +120,7 @@ def get_session_statistics(db: Session) -> dict:
         .filter(
             and_(
                 UserSession.is_active == True,
-                UserSession.expires_at > datetime.utcnow(),
+                UserSession.expires_at > datetime.now(timezone.utc),
             )
         )
         .count()
@@ -143,7 +143,7 @@ def get_session_by_refresh_token(
             UserSession.user_id == user_id,
             UserSession.refresh_token == refresh_token,
             UserSession.is_active == True,
-            UserSession.expires_at > datetime.utcnow(),
+            UserSession.expires_at > datetime.now(timezone.utc),
         )
         .first()
     )

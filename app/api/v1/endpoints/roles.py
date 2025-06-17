@@ -32,7 +32,19 @@ def read_roles(
 
     if include_permissions:
         # Return roles with permissions
-        return [RoleWithPermissions.model_validate(role) for role in roles]
+        result = []
+        for role in roles:
+            # Try to validate with more explicit conversion
+            validated_role = RoleWithPermissions.model_validate(
+                {
+                    **role.__dict__,
+                    "permissions": [
+                        {**p.__dict__, "name": p.name} for p in role.permissions
+                    ],
+                }
+            )
+            result.append(validated_role)
+        return result
     else:
         # Return roles without permissions
         return [RoleSchema.model_validate(role) for role in roles]

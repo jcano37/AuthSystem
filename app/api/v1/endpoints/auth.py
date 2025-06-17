@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -46,7 +46,7 @@ def login(
         )
 
     # Update last login
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
 
     # Create session
@@ -58,7 +58,7 @@ def login(
         refresh_token=refresh_token,
         device_info=request.headers.get("User-Agent", "Unknown"),
         ip_address=request.client.host,
-        expires_at=datetime.utcnow()
+        expires_at=datetime.now(timezone.utc)
         + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
     db.add(session)
@@ -133,7 +133,7 @@ def refresh_token(
 
         # Update session
         session.refresh_token = new_refresh_token
-        session.expires_at = datetime.utcnow() + timedelta(
+        session.expires_at = datetime.now(timezone.utc) + timedelta(
             days=settings.REFRESH_TOKEN_EXPIRE_DAYS
         )
         db.commit()
@@ -164,7 +164,7 @@ def logout(
     if payload:
         exp = payload.get("exp")
         if exp:
-            ttl = exp - int(datetime.utcnow().timestamp())
+            ttl = exp - int(datetime.now(timezone.utc).timestamp())
             if ttl > 0:
                 add_to_blacklist(token, ttl)
 
@@ -211,7 +211,11 @@ def reset_password(
     token_obj = crud.user.get_password_reset_token_by_token(
         db, token=password_reset.token
     )
-    if not token_obj or token_obj.is_used or token_obj.expires_at < datetime.utcnow():
+    if (
+        not token_obj
+        or token_obj.is_used
+        or token_obj.expires_at < datetime.now(timezone.utc)
+    ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token"
         )
