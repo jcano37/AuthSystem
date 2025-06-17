@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
 
-from app.schemas.permission import Permission
 from pydantic import BaseModel
+
+# from app.schemas.permission import Permission
+
 
 # Role schemas
 class RoleBase(BaseModel):
@@ -26,6 +28,7 @@ class Role(RoleBase):
 
     class Config:
         from_attributes = True
+
 
 # Role with permissions schema
 class RoleWithPermissions(Role):

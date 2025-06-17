@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+
 # Permission schemas
 class PermissionBase(BaseModel):
     name: str
