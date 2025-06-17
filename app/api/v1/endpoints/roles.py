@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.api import deps
-from app.models.user import Permission, Role, User
+from app.models.permissions import Permission
+from app.models.roles import Role
+from app.models.user import User
 from app.schemas.user import Role as RoleSchema
 from app.schemas.user import RoleCreate, RoleUpdate, RoleWithPermissions
 

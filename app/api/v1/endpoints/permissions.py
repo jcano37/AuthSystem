@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.api import deps
-from app.models.user import Permission
+from app.models.permissions import Permission
 from app.schemas.user import Permission as PermissionSchema
 from app.schemas.user import PermissionCreate, PermissionUpdate
 

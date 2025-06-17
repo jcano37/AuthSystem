@@ -3,7 +3,8 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
-from app.models.user import Permission, Role
+from app.models.permissions import Permission
+from app.models.roles import Role
 from app.schemas.user import RoleCreate, RoleUpdate
 
 

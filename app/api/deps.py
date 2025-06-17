@@ -11,8 +11,10 @@ from app.core.config import settings
 from app.core.redis import is_blacklisted
 from app.core.security import verify_token
 from app.db.session import SessionLocal
+from app.models.permissions import Permission
 from app.models.resource import ResourceType
-from app.models.user import Permission, Role, User
+from app.models.roles import Role
+from app.models.user import User
 from app.schemas.user import TokenPayload
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")

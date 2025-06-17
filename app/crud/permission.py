@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.user import Permission
+from app.models.permissions import Permission
 from app.schemas.user import PermissionCreate, PermissionUpdate
 
 
