@@ -87,7 +87,7 @@ def create_user(
     # Use provided company_id if available, otherwise use the one from input
     final_company_id = company_id if company_id is not None else user_in.company_id
 
-    user_data = user_in.dict(exclude={"password"})
+    user_data = user_in.model_dump(exclude={"password"})
     user_data["hashed_password"] = get_password_hash(user_in.password)
     user_data["company_id"] = final_company_id
 
@@ -104,7 +104,7 @@ def update_user(
     if isinstance(obj_in, dict):
         update_data = obj_in
     else:
-        update_data = obj_in.dict(exclude_unset=True)
+        update_data = obj_in.model_dump(exclude_unset=True)
 
     if "password" in update_data and update_data["password"]:
         hashed_password = get_password_hash(update_data["password"])

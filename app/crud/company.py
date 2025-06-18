@@ -54,7 +54,7 @@ def create_company(db: Session, *, company_in: CompanyCreate) -> Company:
     if get_company_by_name(db, name=company_in.name):
         raise ValueError(f"Company with name '{company_in.name}' already exists")
 
-    db_obj = Company(**company_in.dict())
+    db_obj = Company(**company_in.model_dump())
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -68,7 +68,7 @@ def update_company(
     if isinstance(obj_in, dict):
         update_data = obj_in
     else:
-        update_data = obj_in.dict(exclude_unset=True)
+        update_data = obj_in.model_dump(exclude_unset=True)
 
     # Check name uniqueness if name is being updated
     if "name" in update_data and update_data["name"] != db_obj.name:
