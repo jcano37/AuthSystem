@@ -11,6 +11,7 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
+    company_id: Optional[int] = None
 
 
 # Properties to receive via API on creation
@@ -19,6 +20,7 @@ class UserCreate(UserBase):
     username: str
     password: Annotated[str, Field(min_length=8)]
     full_name: str
+    company_id: int
     is_superuser: bool = False
     is_active: bool = True
 

@@ -37,7 +37,18 @@ users_table = table('users',
     column('updated_at', sa.DateTime),
     column('last_login', sa.DateTime),
     column('two_factor_enabled', sa.Boolean),
-    column('two_factor_secret', sa.String)
+    column('two_factor_secret', sa.String),
+    column('company_id', sa.Integer)
+)
+
+companies_table = table('companies',
+    column('id', sa.Integer),
+    column('name', sa.String),
+    column('description', sa.String),
+    column('is_active', sa.Boolean),
+    column('is_root', sa.Boolean),
+    column('created_at', sa.DateTime),
+    column('updated_at', sa.DateTime)
 )
 
 roles_table = table('roles',
@@ -46,7 +57,8 @@ roles_table = table('roles',
     column('description', sa.String),
     column('created_at', sa.DateTime),
     column('updated_at', sa.DateTime),
-    column('is_default', sa.Boolean)
+    column('is_default', sa.Boolean),
+    column('company_id', sa.Integer)
 )
 
 permissions_table = table('permissions',
@@ -64,12 +76,44 @@ resource_types_table = table('resource_types',
     column('name', sa.String),
     column('description', sa.String),
     column('created_at', sa.DateTime),
-    column('updated_at', sa.DateTime)
+    column('updated_at', sa.DateTime),
+    column('company_id', sa.Integer)
 )
 
 def upgrade() -> None:
     connection = op.get_bind()
     current_time = datetime.now(timezone.utc)
+
+    # Create companies table first
+    op.create_table(
+        'companies',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(), nullable=False),
+        sa.Column('description', sa.String(), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=True),
+        sa.Column('is_root', sa.Boolean(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_companies_id'), 'companies', ['id'], unique=False)
+    op.create_index(op.f('ix_companies_name'), 'companies', ['name'], unique=True)
+
+    # Insert the root company
+    root_company = {
+        'name': 'Root Company',
+        'description': 'System root company with full access',
+        'is_active': True,
+        'is_root': True,
+        'created_at': current_time,
+        'updated_at': current_time
+    }
+    
+    batch_insert(connection, companies_table, [root_company])
+    
+    # Get the company ID
+    root_company_query = select(companies_table.c.id).where(companies_table.c.is_root == True)
+    root_company_id = connection.execute(root_company_query).scalar()
 
     # Create users table
     op.create_table(
@@ -87,6 +131,8 @@ def upgrade() -> None:
         sa.Column('last_login', sa.DateTime(), nullable=True),
         sa.Column('two_factor_enabled', sa.Boolean(), nullable=True),
         sa.Column('two_factor_secret', sa.String(), nullable=True),
+        sa.Column('company_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
@@ -102,10 +148,12 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('is_default', sa.Boolean(), nullable=True),
+        sa.Column('company_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_roles_id'), 'roles', ['id'], unique=False)
-    op.create_index(op.f('ix_roles_name'), 'roles', ['name'], unique=True)
+    op.create_index(op.f('ix_roles_name'), 'roles', ['name'], unique=False)
 
     # Create resource_types table
     op.create_table(
@@ -115,10 +163,12 @@ def upgrade() -> None:
         sa.Column('description', sa.String(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('company_id', sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_resource_types_id'), 'resource_types', ['id'], unique=False)
-    op.create_index(op.f('ix_resource_types_name'), 'resource_types', ['name'], unique=True)
+    op.create_index(op.f('ix_resource_types_name'), 'resource_types', ['name'], unique=False)
 
     # Create permissions table
     op.create_table(
@@ -134,24 +184,26 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_permissions_id'), 'permissions', ['id'], unique=False)
-    op.create_index(op.f('ix_permissions_name'), 'permissions', ['name'], unique=True)
+    op.create_index(op.f('ix_permissions_name'), 'permissions', ['name'], unique=False)
 
     # Create user_role association table
     op.create_table(
         'user_role',
-        sa.Column('user_id', sa.Integer(), nullable=True),
-        sa.Column('role_id', sa.Integer(), nullable=True),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('role_id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], )
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+        sa.PrimaryKeyConstraint('user_id', 'role_id')
     )
 
     # Create role_permission association table
     op.create_table(
         'role_permission',
-        sa.Column('role_id', sa.Integer(), nullable=True),
-        sa.Column('permission_id', sa.Integer(), nullable=True),
+        sa.Column('role_id', sa.Integer(), nullable=False),
+        sa.Column('permission_id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ),
-        sa.ForeignKeyConstraint(['role_id'], ['roles.id'], )
+        sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
+        sa.PrimaryKeyConstraint('role_id', 'permission_id')
     )
 
     # Create sessions table
@@ -207,19 +259,29 @@ def upgrade() -> None:
             'name': 'users',
             'description': 'Resources related to users',
             'created_at': current_time,
-            'updated_at': current_time
+            'updated_at': current_time,
+            'company_id': root_company_id
         },
         {
             'name': 'roles',
             'description': 'Resources related to roles',
             'created_at': current_time,
-            'updated_at': current_time
+            'updated_at': current_time,
+            'company_id': root_company_id
         },
         {
             'name': 'profile',
             'description': 'Resources related to profiles',
             'created_at': current_time,
-            'updated_at': current_time
+            'updated_at': current_time,
+            'company_id': root_company_id
+        },
+        {
+            'name': 'companies',
+            'description': 'Resources related to companies',
+            'created_at': current_time,
+            'updated_at': current_time,
+            'company_id': root_company_id
         }
     ]
 
@@ -238,21 +300,16 @@ def upgrade() -> None:
             'description': 'Administrator with full access',
             'created_at': current_time,
             'updated_at': current_time,
-            'is_default': False
+            'is_default': False,
+            'company_id': root_company_id
         },
         {
             'name': 'user',
             'description': 'Standard user with limited access',
             'created_at': current_time,
             'updated_at': current_time,
-            'is_default': True
-        },
-        {
-            'name': 'guest',
-            'description': 'Guest user with read-only access',
-            'created_at': current_time,
-            'updated_at': current_time,
-            'is_default': False
+            'is_default': True,
+            'company_id': root_company_id
         }
     ]
 
@@ -260,9 +317,122 @@ def upgrade() -> None:
     batch_insert(connection, roles_table, roles_data)
 
     # Get roles
-    roles_query = select(roles_table.c.id, roles_table.c.name).order_by(roles_table.c.id)
+    roles_query = select(roles_table.c.id, roles_table.c.name).where(roles_table.c.company_id == root_company_id)
     roles_result = connection.execute(roles_query).fetchall()
-    roles = {role_name: role_id for role_id, role_name in roles_result}
+    roles = {name: id for id, name in roles_result}
+
+    # Create the root user
+    from app.core.security import get_password_hash
+    root_user_data = {
+        'username': 'root',
+        'email': 'root@example.com',
+        'full_name': 'System Root',
+        'hashed_password': get_password_hash('Root1234!'),
+        'is_active': True,
+        'is_superuser': True,
+        'is_verified': True,
+        'created_at': current_time,
+        'updated_at': current_time,
+        'company_id': root_company_id
+    }
+    
+    # Insert root user
+    batch_insert(connection, users_table, [root_user_data])
+    
+    # Get the user ID
+    root_user_query = select(users_table.c.id).where(users_table.c.username == 'root')
+    root_user_id = connection.execute(root_user_query).scalar()
+    
+    # Assign admin role to root user
+    user_role_table = table('user_role',
+        column('user_id', sa.Integer),
+        column('role_id', sa.Integer)
+    )
+    
+    user_role_data = [
+        {
+            'user_id': root_user_id,
+            'role_id': roles['admin']
+        }
+    ]
+    
+    batch_insert(connection, user_role_table, user_role_data)
+
+    # Add company permissions
+    company_permissions = []
+    
+    for action in ['create', 'read', 'update', 'delete', 'list']:
+        company_permissions.append({
+            'name': f'company:{action}',
+            'description': f'Permission to {action} companies',
+            'resource_type_id': resource_types['companies'],
+            'action': action,
+            'created_at': current_time,
+            'updated_at': current_time
+        })
+    
+    batch_insert(connection, permissions_table, company_permissions)
+    
+    # Get company permission IDs
+    company_perm_query = select(permissions_table.c.id).where(
+        permissions_table.c.resource_type_id == resource_types['companies']
+    )
+    company_perm_ids = [row[0] for row in connection.execute(company_perm_query).fetchall()]
+    
+    # Assign company permissions to admin role
+    role_permission_table = table('role_permission',
+        column('role_id', sa.Integer),
+        column('permission_id', sa.Integer)
+    )
+    
+    role_perm_data = []
+    for perm_id in company_perm_ids:
+        role_perm_data.append({
+            'role_id': roles['admin'],
+            'permission_id': perm_id
+        })
+    
+    batch_insert(connection, role_permission_table, role_perm_data)
+    
+    # Create a companies resource type for the root company
+    companies_resource_type = {
+        'name': 'root_companies',
+        'description': 'Resources related to managing companies by root',
+        'created_at': current_time,
+        'updated_at': current_time,
+        'company_id': root_company_id
+    }
+    
+    batch_insert(connection, resource_types_table, [companies_resource_type])
+
+    # Create a super_admin role for root company
+    super_admin_role = {
+        'name': 'super_admin',
+        'description': 'Super Admin with access to all companies',
+        'created_at': current_time,
+        'updated_at': current_time,
+        'is_default': False,
+        'company_id': root_company_id
+    }
+    
+    batch_insert(connection, roles_table, [super_admin_role])
+    
+    # Get super_admin role ID
+    super_admin_query = select(roles_table.c.id).where(
+        (roles_table.c.name == 'super_admin') & 
+        (roles_table.c.company_id == root_company_id)
+    )
+    super_admin_id = connection.execute(super_admin_query).scalar()
+    
+    # Assign super_admin role to root user
+    super_admin_role_data = [
+        {
+            'user_id': root_user_id,
+            'role_id': super_admin_id
+        }
+    ]
+    
+    batch_insert(connection, user_role_table, super_admin_role_data)
 
     # Define permissions
     permissions_data = [
@@ -420,4 +590,8 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_username'), table_name='users')
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
-    op.drop_table('users') 
+    op.drop_table('users')
+
+    op.drop_index(op.f('ix_companies_name'), table_name='companies')
+    op.drop_index(op.f('ix_companies_id'), table_name='companies')
+    op.drop_table('companies') 

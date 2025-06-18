@@ -76,11 +76,24 @@ def register(
     *,
     db: Session = Depends(deps.get_db),
     user_in: UserCreate,
+    current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new user.
+    Only accessible by superusers.
     """
     try:
+        # Use company_id from current_user if not root
+        root_company = crud.company.get_root_company(db)
+        is_root_user = current_user.company_id == root_company.id
+
+        # Non-root superusers can only create users in their own company
+        if not is_root_user and user_in.company_id != current_user.company_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only create users in your own company",
+            )
+
         user = crud.user.create_user(db, user_in=user_in)
         return user
     except HTTPException as e:

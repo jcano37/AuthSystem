@@ -25,6 +25,7 @@ class User(Base):
         onupdate=datetime.now(timezone.utc),
     )
     last_login = Column(DateTime, nullable=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
 
     # 2FA fields
     two_factor_enabled = Column(Boolean, default=False)
@@ -37,6 +38,7 @@ class User(Base):
     email_verification_tokens = relationship(
         "EmailVerificationToken", back_populates="user", cascade="all, delete-orphan"
     )
+    company = relationship("Company", back_populates="users")
 
 
 class PasswordResetToken(Base):

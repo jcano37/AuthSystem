@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.core.redis import is_blacklisted
 from app.core.security import verify_token
 from app.db.session import SessionLocal
+from app.models.company import Company
 from app.models.permissions import Permission
 from app.models.resource import ResourceType
 from app.models.roles import Role
@@ -101,8 +102,16 @@ def check_permissions(required_permissions: list[str]):
     ) -> User:
         user_permissions = []
         for role in current_user.roles:
-            for permission in role.permissions:
-                user_permissions.append(permission.name)
+            # Check if role belongs to user's company
+            if role.company_id == current_user.company_id:
+                for permission in role.permissions:
+                    user_permissions.append(permission.name)
+
+        # Superusers in root company have all permissions
+        if current_user.is_superuser:
+            root_company = crud.company.get_root_company(db=SessionLocal())
+            if current_user.company_id == root_company.id:
+                return current_user
 
         if not all(perm in user_permissions for perm in required_permissions):
             raise HTTPException(
@@ -124,7 +133,8 @@ def get_user_by_id_from_path(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    if user.id != current_user.id and not current_user.is_superuser:
+    # Check if user belongs to same company or is superuser
+    if user.company_id != current_user.company_id and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The user doesn't have enough privileges",
@@ -135,7 +145,7 @@ def get_user_by_id_from_path(
 def get_permission_by_id_from_path(
     permission_id: int,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(get_current_active_superuser),
 ) -> Permission:
     permission = crud.permission.get_permission(db, permission_id=permission_id)
     if not permission:
@@ -149,7 +159,7 @@ def get_permission_by_id_from_path(
 def get_role_by_id_from_path(
     role_id: int,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(get_current_active_user),
 ) -> Role:
     role = crud.role.get_role(db, role_id=role_id)
     if not role:
@@ -157,13 +167,19 @@ def get_role_by_id_from_path(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Role not found",
         )
+    # Check if role belongs to same company or is superuser
+    if role.company_id != current_user.company_id and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
+        )
     return role
 
 
 def get_resource_type_by_id_from_path(
     resource_type_id: int,
     db: Session = Depends(get_db),
-    _current_user: User = Depends(get_current_active_superuser),
+    current_user: User = Depends(get_current_active_user),
 ) -> ResourceType:
     resource_type = crud.resource.get_resource_type(
         db, resource_type_id=resource_type_id
@@ -173,4 +189,33 @@ def get_resource_type_by_id_from_path(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resource type not found",
         )
+    # Check if resource type belongs to same company or is superuser
+    if (
+        resource_type.company_id != current_user.company_id
+        and not current_user.is_superuser
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
+        )
     return resource_type
+
+
+def get_company_by_id_from_path(
+    company_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> Company:
+    company = crud.company.get_company_by_id(db, company_id=company_id)
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Company not found",
+        )
+    # Regular users can only access their own company
+    if company.id != current_user.company_id and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user doesn't have enough privileges",
+        )
+    return company

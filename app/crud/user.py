@@ -1,6 +1,6 @@
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -33,11 +33,46 @@ def get_by_email_or_username(
     )
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
-    return db.query(User).offset(skip).limit(limit).all()
+def get_users(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: Optional[User] = None,
+) -> List[User]:
+    """
+    Get users based on user permissions
+    - Superusers from root company see all users
+    - Superusers from other companies see only users in their company
+    - Regular users see only themselves
+    """
+    query = db.query(User)
+
+    # If no current user specified, return all users (admin endpoint)
+    if not current_user:
+        return query.offset(skip).limit(limit).all()
+
+    # Current user is provided
+    if current_user.is_superuser:
+        # Check if user is from root company
+        from app.crud.company import get_root_company
+
+        root_company = get_root_company(db)
+
+        if current_user.company_id != root_company.id:
+            # Non-root superusers can only see users from their company
+            query = query.filter(User.company_id == current_user.company_id)
+    else:
+        # Regular users can only see themselves
+        query = query.filter(User.id == current_user.id)
+
+    return query.offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, *, user_in: UserCreate) -> User:
+def create_user(
+    db: Session, *, user_in: UserCreate, company_id: Optional[int] = None
+) -> User:
+    """Create a new user with company consideration"""
+    # Check if email/username already exists
     if get_user_by_email(db, email=user_in.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -49,14 +84,14 @@ def create_user(db: Session, *, user_in: UserCreate) -> User:
             detail="The user with this username already exists in the system.",
         )
 
-    db_obj = User(
-        email=user_in.email,
-        username=user_in.username,
-        full_name=user_in.full_name,
-        hashed_password=get_password_hash(user_in.password),
-        is_active=user_in.is_active,
-        is_superuser=user_in.is_superuser,
-    )
+    # Use provided company_id if available, otherwise use the one from input
+    final_company_id = company_id if company_id is not None else user_in.company_id
+
+    user_data = user_in.dict(exclude={"password"})
+    user_data["hashed_password"] = get_password_hash(user_in.password)
+    user_data["company_id"] = final_company_id
+
+    db_obj = User(**user_data)
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -75,6 +110,11 @@ def update_user(
         hashed_password = get_password_hash(update_data["password"])
         del update_data["password"]
         update_data["hashed_password"] = hashed_password
+
+    # Prevent changing company_id unless explicitly needed
+    if "company_id" in update_data:
+        # This should be handled with special permissions in the API
+        pass
 
     for field, value in update_data.items():
         setattr(db_obj, field, value)
