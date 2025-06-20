@@ -21,13 +21,13 @@ def read_roles(
     skip: int = 0,
     limit: int = 100,
     include_permissions: bool = True,
-    _: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Retrieve roles with optional permissions.
     """
     roles = crud.role.get_roles(
-        db, skip=skip, limit=limit, include_permissions=include_permissions
+        db, skip=skip, limit=limit, include_permissions=include_permissions, current_user=current_user
     )
 
     if include_permissions:
@@ -66,12 +66,12 @@ def create_role(
     *,
     db: Session = Depends(deps.get_db),
     role_in: RoleCreate,
-    _=Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
     Create new role.
     """
-    return crud.role.create_role(db, role_in=role_in)
+    return crud.role.create_role(db, role_in=role_in, current_user=current_user)
 
 
 @router.put("/{role_id}", response_model=RoleSchema)

@@ -25,6 +25,7 @@ class Role(RoleBase):
     created_at: datetime
     is_default: Optional[bool] = False
     updated_at: Optional[datetime] = None
+    company_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
