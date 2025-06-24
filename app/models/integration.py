@@ -15,7 +15,7 @@ class Integration(Base):
     api_key = Column(String, unique=True, index=True, nullable=False)
     api_secret = Column(String, nullable=False)
     integration_type = Column(String, nullable=False)  # "oauth2", "api_key", etc.
-    configuration = Column(JSON, nullable=True)  # Configuración específica
+    configuration = Column(JSON, nullable=True)  # Specific configuration
     callback_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))

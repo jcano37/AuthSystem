@@ -406,7 +406,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"test1\",\r\n    \"description\": \"Test Usuario\"\r\n}",
+							"raw": "{\r\n    \"name\": \"test1\",\r\n    \"description\": \"Test User\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -582,7 +582,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Permiso1\",\r\n    \"description\": \"Permiso Test\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"delete\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Permission1\",\r\n    \"description\": \"Test Permission\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"delete\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -610,7 +610,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Permiso2\",\r\n    \"description\": \"Permiso Update\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"find2\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Permission2\",\r\n    \"description\": \"Update Permission\",\r\n    \"resource_type_id\": 1,\r\n    \"action\": \"find2\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
