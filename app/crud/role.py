@@ -26,18 +26,22 @@ def get_role(db: Session, role_id: int) -> Optional[Role]:
 
 
 def get_roles(
-    db: Session, skip: int = 0, limit: int = 100, include_permissions: bool = True, current_user: User = None
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    include_permissions: bool = True,
+    current_user: User = None,
 ) -> List[Role]:
     query = db.query(Role)
     if include_permissions:
         query = query.options(
             selectinload(Role.permissions).selectinload(Permission.resource_type)
         )
-    
+
     # Filter by company for non-superusers
     if current_user and not current_user.is_superuser:
         query = query.filter(Role.company_id == current_user.company_id)
-    
+
     return query.offset(skip).limit(limit).all()
 
 

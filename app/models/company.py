@@ -25,3 +25,4 @@ class Company(Base):
     users = relationship("User", back_populates="company")
     roles = relationship("Role", back_populates="company")
     resource_types = relationship("ResourceType", back_populates="company")
+    integrations = relationship("Integration", back_populates="company")

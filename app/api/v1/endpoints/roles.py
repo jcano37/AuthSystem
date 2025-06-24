@@ -27,7 +27,11 @@ def read_roles(
     Retrieve roles with optional permissions.
     """
     roles = crud.role.get_roles(
-        db, skip=skip, limit=limit, include_permissions=include_permissions, current_user=current_user
+        db,
+        skip=skip,
+        limit=limit,
+        include_permissions=include_permissions,
+        current_user=current_user,
     )
 
     if include_permissions:
