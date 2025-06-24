@@ -1,19 +1,14 @@
-# 🔐 Full-Stack Authentication & Authorization System
+# 🔐 Authentication Backend API
 
-A comprehensive, enterprise-grade authentication and authorization platform built with **FastAPI** (backend) and **React** (frontend), featuring multi-tenancy, role-based access control (RBAC), session management, integrations, and modern security practices.
+A robust, enterprise-grade authentication and authorization REST API built with **FastAPI**, featuring multi-tenancy, role-based access control (RBAC), session management, integrations, and comprehensive security features.
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-green.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-19.1.0-blue.svg)](https://reactjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7+-red.svg)](https://redis.io/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 🌟 Overview
-
-This is a complete authentication and authorization solution designed for modern applications requiring sophisticated user management, multi-tenant architecture, and enterprise-level security. The system provides both a robust API backend and a sleek administrative frontend.
-
-## 🚀 Key Features
+## 🚀 Features
 
 ### 🔐 Core Authentication
 - **JWT Authentication**: Secure access and refresh token system with automatic renewal
@@ -23,20 +18,20 @@ This is a complete authentication and authorization solution designed for modern
 - **Password Security**: bcrypt hashing with configurable complexity policies
 - **Two-Factor Authentication**: Optional 2FA support with TOTP
 
-### 👥 User Management
-- **User Registration**: Admin-controlled user creation with email verification
-- **Profile Management**: Comprehensive user profile system with avatar support
-- **Password Reset**: Secure password reset workflow with time-limited tokens
-- **Account Status Management**: Active/inactive user control
-- **Login History**: Track user authentication events
-- **Device Management**: View and revoke sessions across devices
-
-### 🏢 Multi-Tenancy & Companies
+### 🏢 Multi-Tenancy
 - **Company Isolation**: Complete data separation between organizations
 - **Root Company**: System-level administration capabilities
 - **Company Management**: Create, update, and manage multiple organizations
 - **User-Company Association**: Users belong to specific companies
 - **Company-Scoped Resources**: Roles, permissions, and integrations per company
+
+### 👥 User Management
+- **User Registration**: Admin-controlled user creation with email verification
+- **Profile Management**: Comprehensive user profile system
+- **Password Reset**: Secure password reset workflow with time-limited tokens
+- **Account Status Management**: Active/inactive user control
+- **Login History**: Track user authentication events
+- **Device Management**: View and revoke sessions across devices
 
 ### 🛡️ Authorization & Access Control
 - **Role-Based Access Control (RBAC)**: Flexible role and permission system
@@ -52,14 +47,6 @@ This is a complete authentication and authorization solution designed for modern
 - **Integration Types**: Support for OAuth2, API key, and custom integrations
 - **Secret Regeneration**: Security-focused API secret management
 - **Company-Scoped Integrations**: Integrations isolated per company
-
-### 🖥️ Modern Frontend
-- **React 19**: Latest React with modern hooks and patterns
-- **Tailwind CSS**: Beautiful, responsive UI with dark mode support
-- **Admin Dashboard**: Comprehensive administrative interface
-- **User Self-Service**: Profile management and session control
-- **Real-time Updates**: Live session monitoring and management
-- **Mobile Responsive**: Optimized for all device sizes
 
 ### 🔒 Security Features
 - **Rate Limiting**: Configurable request rate limiting per endpoint
@@ -79,11 +66,8 @@ This is a complete authentication and authorization solution designed for modern
 - **Development Tools**: PowerShell scripts for workflow automation
 - **Type Safety**: Full TypeScript-style type hints in Python
 
-## 🏗️ Architecture
+## 🏗️ Technology Stack
 
-### Technology Stack
-
-#### Backend
 - **Framework**: FastAPI 0.115.0 with async/await support
 - **Database**: PostgreSQL 16+ with SQLAlchemy 2.0.27 ORM
 - **Cache**: Redis 7+ for sessions, rate limiting, and caching
@@ -94,21 +78,11 @@ This is a complete authentication and authorization solution designed for modern
 - **Testing**: pytest 8.0.0 with async support and coverage
 - **ASGI Server**: Uvicorn 0.27.1 with hot reload
 
-#### Frontend
-- **Framework**: React 19.1.0 with modern hooks
-- **Styling**: Tailwind CSS 4.1.10 with custom components
-- **Routing**: React Router DOM 7.6.2 with protected routes
-- **HTTP Client**: Axios 1.9.0 with interceptors
-- **Forms**: React Hook Form 7.57.0 with validation
-- **Icons**: Heroicons 2.2.0 for consistent iconography
-- **Build Tool**: Vite 6.3.5 with hot module replacement
-- **State Management**: React Context with reducers
-
-### Database Schema
+## 🗃️ Database Schema
 
 The system implements a sophisticated multi-tenant database schema:
 
-#### Core Entities
+### Core Entities
 - **Companies**: Multi-tenant isolation with root company support
 - **Users**: User accounts with company association and 2FA
 - **Roles**: Named permission groups scoped to companies
@@ -117,13 +91,13 @@ The system implements a sophisticated multi-tenant database schema:
 - **Sessions**: Active user sessions with device tracking
 - **Integrations**: External system connections with API keys
 
-#### Security Tables
+### Security Tables
 - **PasswordResetTokens**: Secure password reset mechanism
 - **EmailVerificationTokens**: Account verification system
 - **UserRole**: Many-to-many user-role associations
 - **RolePermission**: Many-to-many role-permission associations
 
-#### Key Relationships
+### Key Relationships
 - Users belong to Companies (multi-tenancy)
 - Roles are scoped to Companies
 - Permissions reference ResourceTypes
@@ -134,7 +108,6 @@ The system implements a sophisticated multi-tenant database schema:
 
 ### System Requirements
 - **Python**: 3.11 or higher
-- **Node.js**: 18+ with npm (for frontend)
 - **Docker**: Latest version with Docker Compose V2
 - **PostgreSQL**: 16+ (if running locally)
 - **Redis**: 7+ (if running locally)
@@ -212,7 +185,7 @@ REQUIRE_UPPERCASE=true
 SESSION_EXPIRE_DAYS=30
 ENABLE_2FA=false
 
-# CORS Origins (Add your frontend URL)
+# CORS Origins (Add your frontend URLs)
 BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
 ```
 
@@ -229,32 +202,19 @@ docker-compose exec app alembic upgrade head
 curl http://localhost:8000/
 ```
 
-### 4. Frontend Setup
+### 4. Access the API
 
-```bash
-# Navigate to frontend directory
-cd ../auth-frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-### 5. Access the Application
-
-- **API Backend**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Frontend Application**: http://localhost:5173
+- **API Base**: http://localhost:8000
+- **Interactive Documentation**: http://localhost:8000/docs
 - **ReDoc Documentation**: http://localhost:8000/redoc
+- **OpenAPI Schema**: http://localhost:8000/api/v1/openapi.json
 
-### 6. Create Initial Admin User
+### 5. Create Initial Admin User
 
 Use the API to create your first admin user:
 
 ```bash
-# Using the API directly (replace with your data)
+# Using curl (replace with your data)
 curl -X POST "http://localhost:8000/api/v1/users/" \
   -H "Content-Type: application/json" \
   -d '{
@@ -344,46 +304,92 @@ curl -X POST "http://localhost:8000/api/v1/users/" \
 | `POST` | `/api/v1/integrations/{integration_id}/regenerate-secret` | Regenerate API secret | Admin |
 | `POST` | `/api/v1/webhooks/{integration_type}` | Receive webhook | API Key |
 
-## 🖥️ Frontend Features
+## 🏗️ Project Structure
 
-### User Interface
-- **Modern Design**: Clean, professional interface with Tailwind CSS
-- **Responsive Layout**: Mobile-first design that works on all devices
-- **Dark Mode Ready**: Prepared for dark theme implementation
-- **Loading States**: Proper loading indicators and skeleton screens
-- **Error Handling**: User-friendly error messages and retry mechanisms
-
-### Pages & Components
-
-#### Public Pages
-- **Login**: Secure authentication with remember me option
-- **Forgot Password**: Password reset request and confirmation
-
-#### User Pages
-- **Dashboard**: Overview of user account and recent activity
-- **Profile**: Edit personal information and change password
-- **My Sessions**: View and manage active sessions across devices
-
-#### Admin Pages
-- **Users**: Complete user management with creation, editing, and role assignment
-- **Roles**: Role management with permission assignment
-- **Permissions**: Permission management with resource-action pairs
-- **Sessions**: System-wide session monitoring and management
-- **Companies**: Multi-tenant company management (root admin only)
-- **Integrations**: External system integration management
-
-### Security Features
-- **Protected Routes**: Route-level authentication and authorization
-- **Role-Based Access**: Different interfaces for users and admins
-- **Session Management**: Automatic token refresh and logout on expiry
-- **CSRF Protection**: Built-in protection against cross-site request forgery
+```
+auth-backend/
+├── alembic/                      # Database migrations
+│   ├── versions/                 # Migration files
+│   │   ├── unified_migration.py  # Main database schema
+│   │   └── add_integrations_table.py
+│   ├── env.py                    # Alembic environment
+│   └── migration_utils.py        # Migration utilities
+├── app/                          # Main application
+│   ├── api/                      # API layer
+│   │   ├── deps.py              # Dependencies
+│   │   ├── middlewares/         # Custom middlewares
+│   │   │   └── api_auth.py      # API key authentication
+│   │   └── v1/endpoints/        # API endpoints
+│   │       ├── auth.py          # Authentication
+│   │       ├── users.py         # User management
+│   │       ├── sessions.py      # Session management
+│   │       ├── roles.py         # Role management
+│   │       ├── permissions.py   # Permission management
+│   │       ├── resources.py     # Resource management
+│   │       ├── companies.py     # Company management
+│   │       ├── integrations.py  # Integration management
+│   │       └── webhooks.py      # Webhook endpoints
+│   ├── core/                     # Core utilities
+│   │   ├── config.py            # Configuration
+│   │   ├── security.py          # Security functions
+│   │   └── redis.py             # Redis utilities
+│   ├── crud/                     # Database operations
+│   │   ├── user.py              # User CRUD
+│   │   ├── role.py              # Role CRUD
+│   │   ├── permission.py        # Permission CRUD
+│   │   ├── session.py           # Session CRUD
+│   │   ├── resource.py          # Resource CRUD
+│   │   ├── company.py           # Company CRUD
+│   │   └── integration.py       # Integration CRUD
+│   ├── db/                       # Database setup
+│   │   ├── base.py              # Database base
+│   │   ├── base_class.py        # SQLAlchemy base
+│   │   └── session.py           # Database session
+│   ├── models/                   # SQLAlchemy models
+│   │   ├── user.py              # User models
+│   │   ├── roles.py             # Role models
+│   │   ├── permissions.py       # Permission models
+│   │   ├── resource.py          # Resource models
+│   │   ├── sessions.py          # Session models
+│   │   ├── company.py           # Company models
+│   │   └── integration.py       # Integration models
+│   ├── schemas/                  # Pydantic schemas
+│   │   ├── user.py              # User schemas
+│   │   ├── role.py              # Role schemas
+│   │   ├── permission.py        # Permission schemas
+│   │   ├── resource.py          # Resource schemas
+│   │   ├── session.py           # Session schemas
+│   │   ├── company.py           # Company schemas
+│   │   └── integration.py       # Integration schemas
+│   └── main.py                   # Application entry point
+├── tests/                        # Test suite
+│   ├── conftest.py              # Test configuration
+│   ├── test_auth.py             # Authentication tests
+│   └── test_main.py             # Main application tests
+├── cURL/                         # API testing collection
+│   └── Auth System.postman_collection.json
+├── docs/                         # Documentation
+│   ├── ENVIRONMENT_SETUP.md     # Environment configuration
+│   └── CODE_QUALITY.md          # Code quality guidelines
+├── k8s/                          # Kubernetes manifests
+├── scripts/                      # Utility scripts
+├── docker-compose.yml            # Docker orchestration
+├── Dockerfile                    # Docker image definition
+├── requirements.txt              # Production dependencies
+├── requirements-dev.txt          # Development dependencies
+├── pyproject.toml               # Python project configuration
+├── alembic.ini                  # Alembic configuration
+├── format_and_check.ps1         # Code quality automation
+└── reset-and-rebuild.ps1        # Environment reset script
+```
 
 ## 🔧 Development
 
-### Backend Development
+### Local Development Setup
 
 ```bash
 # Install dependencies
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
 # Run development server
@@ -406,25 +412,6 @@ alembic upgrade head
 alembic revision --autogenerate -m "Description"
 ```
 
-### Frontend Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Lint code
-npm run lint
-```
-
 ### Database Management
 
 ```bash
@@ -439,11 +426,27 @@ docker-compose exec app alembic upgrade head
 
 # View migration history
 docker-compose exec app alembic history
+
+# Revert last migration
+docker-compose exec app alembic downgrade -1
+```
+
+### Code Quality
+
+```bash
+# Run all quality checks (Windows)
+./format_and_check.ps1
+
+# Manual tools
+python -m black app
+python -m isort app
+python -m flake8 app
+python -m mypy app
 ```
 
 ## 🧪 Testing
 
-### Backend Testing
+### Running Tests
 
 ```bash
 # Run all tests
@@ -457,6 +460,9 @@ pytest tests/test_auth.py
 
 # Run tests with verbose output
 pytest -v
+
+# Run tests in Docker
+docker-compose exec app pytest
 ```
 
 ### API Testing
@@ -465,7 +471,7 @@ The project includes a comprehensive Postman collection:
 
 ```bash
 # Import the collection
-curl/Auth System.postman_collection.json
+cURL/Auth System.postman_collection.json
 ```
 
 Test scenarios included:
@@ -474,6 +480,7 @@ Test scenarios included:
 - Role and permission management
 - Session management
 - Integration and webhook testing
+- Multi-tenant operations
 
 ## 🚀 Deployment
 
@@ -525,27 +532,29 @@ kubectl get pods
 kubectl get services
 ```
 
-## 📊 Monitoring & Observability
+## 📊 Monitoring & Health Checks
 
-### Health Checks
+### Health Endpoints
 
 ```bash
-# Backend health
+# Application health
 curl http://localhost:8000/
 
 # Database connectivity
-curl http://localhost:8000/api/v1/health/db
+curl http://localhost:8000/health/db
 
 # Redis connectivity
-curl http://localhost:8000/api/v1/health/redis
+curl http://localhost:8000/health/redis
 ```
 
-### Metrics & Logging
+### Logging
 
-- **Application Logs**: Structured logging with correlation IDs
-- **Database Metrics**: Connection pool and query performance
-- **Redis Metrics**: Cache hit rates and session statistics
-- **Security Events**: Authentication failures and suspicious activity
+The application uses structured logging with different levels:
+
+- **INFO**: Normal operations
+- **WARNING**: Unusual but handled situations
+- **ERROR**: Error conditions
+- **DEBUG**: Detailed debugging information (development only)
 
 ## 🔒 Security Considerations
 
@@ -573,31 +582,40 @@ curl http://localhost:8000/api/v1/health/redis
 - **CORS Configuration**: Fine-grained cross-origin controls
 - **API Key Management**: Secure integration authentication
 
+### Password Policy Configuration
+
+```env
+MIN_PASSWORD_LENGTH=8          # Minimum password length
+REQUIRE_SPECIAL_CHAR=true      # Require special characters
+REQUIRE_NUMBER=true            # Require numbers
+REQUIRE_UPPERCASE=true         # Require uppercase letters
+```
+
+### Rate Limiting Configuration
+
+```env
+RATE_LIMIT_PER_MINUTE=60      # Requests per minute per IP
+```
+
 ## 🤝 Contributing
 
 ### Development Workflow
 
 1. **Fork** the repository
 2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+3. **Make** your changes
+4. **Run** tests and quality checks (`./format_and_check.ps1`)
+5. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. **Push** to the branch (`git push origin feature/amazing-feature`)
+7. **Open** a Pull Request
 
 ### Code Standards
 
-- **Python**: Follow PEP 8, use Black for formatting
-- **TypeScript/JavaScript**: Follow ESLint configuration
-- **Documentation**: Update README and API docs for new features
-- **Testing**: Add tests for new functionality
-- **Type Hints**: Use comprehensive type annotations
-
-### Pull Request Guidelines
-
-- Provide clear description of changes
-- Include relevant tests
-- Update documentation as needed
-- Ensure all CI checks pass
-- Follow semantic versioning for releases
+- **Python Style**: PEP 8 compliance via Black
+- **Import Sorting**: isort configuration
+- **Type Hints**: Comprehensive type annotations
+- **Documentation**: Docstrings for all public functions
+- **Testing**: Unit tests for all new functionality
 
 ## 📖 Additional Documentation
 
@@ -613,17 +631,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **FastAPI**: For the excellent web framework
-- **React**: For the powerful frontend library
-- **PostgreSQL**: For reliable data storage
-- **Redis**: For high-performance caching
-- **Tailwind CSS**: For beautiful, responsive styling
 - **SQLAlchemy**: For robust database ORM
 - **Alembic**: For database migration management
+- **PostgreSQL**: For reliable data storage
+- **Redis**: For high-performance caching
+- **Pydantic**: For data validation and serialization
 
 ## 📞 Support
 
-For support, email support@yourapp.com or create an issue in the repository.
+For backend-specific support:
+- **Issues**: Create an issue in the repository with the `backend` label
+- **Documentation**: Check this README and the `/docs` directory
+- **API Testing**: Use the provided Postman collection
+- **Security Issues**: Email security issues privately
 
 ---
 
-**Built with ❤️ for modern authentication and authorization needs**
+**Built with ❤️ using FastAPI and modern Python practices**
