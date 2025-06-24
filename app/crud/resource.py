@@ -43,7 +43,7 @@ def create_resource_type(
 def update_resource_type(
     db: Session, *, db_obj: ResourceType, obj_in: ResourceTypeUpdate
 ) -> ResourceType:
-    update_data = obj_in.dict(exclude_unset=True)
+    update_data = obj_in.model_dump(exclude_unset=True)
 
     if "name" in update_data and update_data["name"] != db_obj.name:
         if get_resource_type_by_name(db, name=update_data["name"]):

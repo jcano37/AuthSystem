@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from app.db.base_class import Base
+from app.db.base_class import CustomBase as Base
 
 
 class Session(Base):
@@ -14,7 +14,7 @@ class Session(Base):
     refresh_token = Column(String, unique=True, index=True)
     device_info = Column(String)
     ip_address = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
     expires_at = Column(DateTime, nullable=False)
     is_active = Column(Boolean, default=True)
 

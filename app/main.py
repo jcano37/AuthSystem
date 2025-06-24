@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.endpoints import auth, permissions
+from app.api.v1.endpoints import auth, companies, integrations, permissions
 from app.api.v1.endpoints import resources as resources_router
-from app.api.v1.endpoints import roles, sessions, users
+from app.api.v1.endpoints import roles, sessions, users, webhooks
 from app.core.config import settings
 
 app = FastAPI(
@@ -37,6 +37,21 @@ app.include_router(
     resources_router.router,
     prefix=f"{settings.API_V1_STR}/resources",
     tags=["resources"],
+)
+app.include_router(
+    companies.router,
+    prefix=f"{settings.API_V1_STR}/companies",
+    tags=["companies"],
+)
+app.include_router(
+    integrations.router,
+    prefix=f"{settings.API_V1_STR}/integrations",
+    tags=["integrations"],
+)
+app.include_router(
+    webhooks.router,
+    prefix=f"{settings.API_V1_STR}/webhooks",
+    tags=["webhooks"],
 )
 
 

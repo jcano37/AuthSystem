@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Annotated, List, Optional
+from typing import Annotated, Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # Shared properties
@@ -11,6 +11,7 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
+    company_id: Optional[int] = None
 
 
 # Properties to receive via API on creation
@@ -19,6 +20,7 @@ class UserCreate(UserBase):
     username: str
     password: Annotated[str, Field(min_length=8)]
     full_name: str
+    company_id: int
     is_superuser: bool = False
     is_active: bool = True
 
@@ -36,8 +38,7 @@ class UserInDBBase(UserBase):
     updated_at: datetime
     last_login: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Additional properties to return via API
@@ -84,58 +85,3 @@ class ActiveUsersStats(BaseModel):
     total_active_sessions: int
     total_users: int
     new_users_7d: int
-
-
-# Role schemas
-class RoleBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-
-class RoleCreate(RoleBase):
-    pass
-
-
-class RoleUpdate(RoleBase):
-    pass
-
-
-class Role(RoleBase):
-    id: int
-    created_at: datetime
-    is_default: Optional[bool] = False
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
-# Permission schemas
-class PermissionBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    resource_type_id: int
-    action: str
-
-
-class PermissionCreate(PermissionBase):
-    pass
-
-
-class PermissionUpdate(PermissionBase):
-    pass
-
-
-class Permission(PermissionBase):
-    id: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    resource: Optional[str] = None  # This will be populated from resource_type.name
-
-    class Config:
-        from_attributes = True
-
-
-# Role with permissions schema
-class RoleWithPermissions(Role):
-    permissions: List[Permission] = []

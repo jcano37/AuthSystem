@@ -1,10 +1,12 @@
 from typing import Any
 
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.orm import declarative_base, declared_attr
+
+Base = declarative_base()
 
 
-@as_declarative()
-class Base:
+class CustomBase(Base):
+    __abstract__ = True
     id: Any
     __name__: str
 

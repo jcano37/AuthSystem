@@ -6,11 +6,13 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import CustomBase as Base
 
 
-class ResourceType(Base):
-    __tablename__ = "resource_types"
+class Permission(Base):
+    __tablename__ = "permissions"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
+    resource_type_id = Column(Integer, ForeignKey("resource_types.id"), nullable=False)
+    action = Column(String, nullable=False)
+    name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     updated_at = Column(
@@ -18,8 +20,9 @@ class ResourceType(Base):
         default=datetime.now(timezone.utc),
         onupdate=datetime.now(timezone.utc),
     )
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
 
-    # Relationship with permissions
-    permissions = relationship("Permission", back_populates="resource_type")
-    company = relationship("Company", back_populates="resource_types")
+    # Relationships
+    resource_type = relationship("ResourceType", back_populates="permissions")
+    roles = relationship(
+        "Role", secondary="role_permission", back_populates="permissions"
+    )

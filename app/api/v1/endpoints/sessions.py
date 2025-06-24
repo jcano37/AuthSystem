@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -50,7 +50,7 @@ def revoke_session(
     if payload:
         exp = payload.get("exp")
         if exp:
-            ttl = exp - int(datetime.utcnow().timestamp())
+            ttl = exp - int(datetime.now(timezone.utc).timestamp())
             if ttl > 0:
                 add_to_blacklist(session.refresh_token, ttl)
 
@@ -92,7 +92,7 @@ def revoke_all_sessions(
         if payload:
             exp = payload.get("exp")
             if exp:
-                ttl = exp - int(datetime.utcnow().timestamp())
+                ttl = exp - int(datetime.now(timezone.utc).timestamp())
                 if ttl > 0:
                     add_to_blacklist(session.refresh_token, ttl)
 
@@ -125,7 +125,7 @@ def admin_revoke_session(
     if payload:
         exp = payload.get("exp")
         if exp:
-            ttl = exp - int(datetime.utcnow().timestamp())
+            ttl = exp - int(datetime.now(timezone.utc).timestamp())
             if ttl > 0:
                 add_to_blacklist(session.refresh_token, ttl)
 

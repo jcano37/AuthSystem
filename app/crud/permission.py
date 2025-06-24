@@ -3,8 +3,8 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.user import Permission
-from app.schemas.user import PermissionCreate, PermissionUpdate
+from app.models.permissions import Permission
+from app.schemas.permission import PermissionCreate, PermissionUpdate
 
 
 def get_permission_by_name(db: Session, name: str) -> Optional[Permission]:
@@ -36,7 +36,7 @@ def create_permission(db: Session, *, permission_in: PermissionCreate) -> Permis
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The permission with this name already exists in the system.",
         )
-    db_obj = Permission(**permission_in.dict())
+    db_obj = Permission(**permission_in.model_dump())
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)
@@ -48,7 +48,7 @@ def create_permission(db: Session, *, permission_in: PermissionCreate) -> Permis
 def update_permission(
     db: Session, *, db_obj: Permission, obj_in: PermissionUpdate
 ) -> Permission:
-    update_data = obj_in.dict(exclude_unset=True)
+    update_data = obj_in.model_dump(exclude_unset=True)
 
     if "name" in update_data and update_data["name"] != db_obj.name:
         if get_permission_by_name(db, name=update_data["name"]):

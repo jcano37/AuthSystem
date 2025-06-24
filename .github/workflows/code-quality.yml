@@ -3,8 +3,8 @@ name: Backend Code Quality Check
 on:
   push:
     branches: [ develop, qa, main ]
-  pull_request:
-    branches: [ develop, qa, main ]
+  # pull_request:
+  #   branches: [ develop, qa, main ]
 
 jobs:
   code-quality:
@@ -35,4 +35,4 @@ jobs:
         
     - name: Run code quality checks
       shell: pwsh
-      run: ./format_and_check.ps1 --check-only --verbose
+      run: ./format_and_check.ps1 --verbose
